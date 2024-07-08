@@ -1,3 +1,4 @@
 venv
 .DS_Store
 python/metadata/test
+*.log

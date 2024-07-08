@@ -1,0 +1,3 @@
+tvdb_v4_official
+requests
+colorama

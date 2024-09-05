@@ -1,56 +1,64 @@
-#
+# -----------------------------------------------------------------------------
 # send_discord_message.py
 #
-# A Python script to send messages to a Discord channel using a webhook.
-#
-# This script reads configuration details from a YAML file (config.yml) and sends
-# a message to a specified Discord channel via a webhook. The message includes:
-# - A user mention (tag) using their Discord user ID.
-# - An embed with a title, description, and color.
+# A Python script to send customizable messages to a Discord channel using a webhook.
+# Reads configuration from 'config.yml' and constructs an embed with options like:
+# - Tagging a user, custom title, description, and color.
+# - Optional fields, header, thumbnail, and timestamp.
 #
 # Requirements:
 # - Python 3.x
-# - requests (for making HTTP requests)
-# - PyYAML (for reading the YAML configuration file)
+# - requests, PyYAML
 #
 # Usage:
-# 1. Create a 'config.yml' file in the same directory with all necessary fields.
-# 2. Run the script using: python send_discord_message.py
-#
-# Ensure you have your 'config.yml' properly set up with all required fields:
-# - webhook_url: The Discord webhook URL to post messages to.
-# - user_to_tag: The Discord user ID to tag in the message.
-# - hex_color: The color of the embed in hexadecimal format.
-# - title: The title of the embed.
-# - message: The content of the message to be sent.
-#
+# 1. Configure 'config.yml' with necessary details (webhook URL, user ID, etc.).
+# 2. Run: python send_discord_message.py
+# -----------------------------------------------------------------------------
 
 import requests  # Library for making HTTP requests
 import json      # Library for handling JSON data
 import yaml      # Library for reading YAML files
+from datetime import datetime  # Library for handling date and time
 
 
-def send_discord_message(webhook_url, user_to_tag, title, message, color):
+def send_discord_message(webhook_url, user_to_tag, header, title, message, color, fields, thumbnail_url):
     """
     Sends a message to a Discord channel using a webhook.
 
     Args:
         webhook_url (str): The Discord webhook URL.
         user_to_tag (str): The Discord user ID to tag in the message.
+        header (str): The header text of the embed.
         title (str): The title of the embed message.
         message (str): The content of the embed message.
         color (int): The color of the embed in decimal format.
+        fields (list of dict): A list of fields to add to the embed.
+        thumbnail_url (str): The URL of the thumbnail image for the embed.
     """
 
     # Create the content to tag the user
     content = f"<@{user_to_tag}>"
 
+    # Get the current timestamp in the desired format with AM/PM
+    current_time = datetime.now().strftime("%m/%d/%Y %I:%M %p")
+
     # Define the embed structure
     embed = {
+        "author": {  # Add a header/author to the embed
+            "name": header
+        },
         "title": title,
         "description": message,
-        "color": color  # Color should be in decimal format
+        "color": color,  # Color should be in decimal format
+        "footer": {  # Add a footer with the timestamp
+            "text": f"{current_time}"
+        },
+        "fields": fields if fields else []  # Add fields if specified
     }
+
+    # Add the thumbnail URL to the embed if it is specified
+    if thumbnail_url:
+        embed["thumbnail"] = {"url": thumbnail_url}
 
     # Prepare the data payload to send to the webhook
     data = {
@@ -82,11 +90,14 @@ if __name__ == "__main__":
     webhook_url = config.get("webhook_url")
     user_to_tag = config.get("user_to_tag")
     hex_color = config.get("hex_color")
+    header = config.get("header")
     title = config.get("title")
     message = config.get("message")
+    fields = config.get("fields", [])
+    thumbnail_url = config.get("thumbnail_url")
 
     # Validate that all required fields are present
-    if not webhook_url or not user_to_tag or not hex_color or not title or not message:
+    if not webhook_url or not user_to_tag or not hex_color or not header or not title or not message:
         print("Error: Missing required information in config.yml.")
         exit(1)
 
@@ -98,4 +109,4 @@ if __name__ == "__main__":
         exit(1)
 
     # Send the message to Discord
-    send_discord_message(webhook_url, user_to_tag, title, message, color)
+    send_discord_message(webhook_url, user_to_tag, header, title, message, color, fields, thumbnail_url)

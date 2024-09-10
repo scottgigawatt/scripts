@@ -2,4 +2,4 @@ venv
 .DS_Store
 python/metadata/test
 *.log
-config.yml
+config*.yml

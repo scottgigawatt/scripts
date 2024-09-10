@@ -1,23 +1,21 @@
 # -----------------------------------------------------------------------------
 # send_discord_message.py
 #
-# A Python script to send customizable messages to a Discord channel using a webhook.
-# Reads configuration from 'config.yml' and constructs an embed with options like:
-# - Tagging a user, custom title, description, and color.
-# - Optional fields, header, thumbnail, and timestamp.
+# A Python script to send customized messages to a Discord channel using a webhook.
+# Reads settings from a YAML config file specified via the command line.
+#
+# Usage:
+#   python send_discord_message.py <config.yml>
 #
 # Requirements:
 # - Python 3.x
 # - requests, PyYAML
-#
-# Usage:
-# 1. Configure 'config.yml' with necessary details (webhook URL, user ID, etc.).
-# 2. Run: python send_discord_message.py
 # -----------------------------------------------------------------------------
 
 import requests  # Library for making HTTP requests
 import json      # Library for handling JSON data
 import yaml      # Library for reading YAML files
+import sys       # Library for handling command-line arguments
 from datetime import datetime  # Library for handling date and time
 
 
@@ -51,7 +49,7 @@ def send_discord_message(webhook_url, user_to_tag, header, title, message, color
         "description": message,
         "color": color,  # Color should be in decimal format
         "footer": {  # Add a footer with the timestamp
-            "text": f"{current_time}"
+            "text": f"Timestamp: {current_time}"
         },
         "fields": fields if fields else []  # Add fields if specified
     }
@@ -78,12 +76,19 @@ def send_discord_message(webhook_url, user_to_tag, header, title, message, color
 
 
 if __name__ == "__main__":
+    # Check if the config file was provided as a command line argument
+    if len(sys.argv) < 2:
+        print("Usage: python send_discord_message.py <config.yml>")
+        exit(1)
+
+    config_file = sys.argv[1]
+
     # Read configuration from the YAML file
     try:
-        with open("config.yml", "r") as ymlfile:
+        with open(config_file, "r") as ymlfile:
             config = yaml.safe_load(ymlfile)  # Load the YAML configuration file
     except FileNotFoundError:
-        print("Error: config.yml not found in the current directory.")
+        print(f"Error: {config_file} not found in the current directory.")
         exit(1)
 
     # Extract data from the YAML configuration

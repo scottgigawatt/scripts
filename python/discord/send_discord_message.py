@@ -37,8 +37,8 @@ def send_discord_message(webhook_url, user_to_tag, header, title, message, color
     # Create the content to tag the user
     content = f"<@{user_to_tag}>"
 
-    # Get the current timestamp in the desired format with AM/PM
-    current_time = datetime.now().strftime("%m/%d/%Y %I:%M %p")
+    # Get the current Unix timestamp
+    current_timestamp = int(datetime.now().timestamp())
 
     # Define the embed structure
     embed = {
@@ -48,8 +48,8 @@ def send_discord_message(webhook_url, user_to_tag, header, title, message, color
         "title": title,
         "description": message,
         "color": color,  # Color should be in decimal format
-        "footer": {  # Add a footer with the timestamp
-            "text": f"Timestamp: {current_time}"
+        "footer": {  # Add a footer with the relative timestamp format
+            "text": f"<t:{current_timestamp}:R>"
         },
         "fields": fields if fields else []  # Add fields if specified
     }

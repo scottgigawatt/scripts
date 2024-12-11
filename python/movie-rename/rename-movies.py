@@ -60,6 +60,30 @@ def move_to_trash(path):
     shutil.move(path, trash_path)
     print(f"Moved to trash: {path} -> {trash_path}")
 
+def create_folder_for_root_movies(base_path):
+    """
+    Moves movie files in the root of the provided folder into new folders named
+    based on the movie name and year extracted from the file name.
+    """
+    for file_name in os.listdir(base_path):
+        file_path = os.path.join(base_path, file_name)
+        if os.path.isfile(file_path) and file_name.lower().endswith(('.mp4', '.mkv')):
+            movie_name, movie_year = parse_movie_info(file_name)
+            if not movie_name or not movie_year:
+                print(f"Skipping root movie file (unable to parse): {file_name}")
+                continue
+
+            new_folder_name = f"{movie_name} ({movie_year})"
+            new_folder_path = os.path.join(base_path, new_folder_name)
+
+            # Create the folder if it doesn't already exist
+            os.makedirs(new_folder_path, exist_ok=True)
+
+            # Move the movie file into the folder
+            new_file_path = os.path.join(new_folder_path, file_name)
+            shutil.move(file_path, new_file_path)
+            print(f"Moved root-level movie file: {file_name} -> {new_folder_name}/")
+
 def process_subtitles(folder_path, movie_name, movie_year, default_quality, default_resolution, deleted_subtitle_folders):
     """
     Processes subtitle files in subfolders. Moves English subtitles to the main folder,
@@ -97,10 +121,11 @@ def process_subtitles(folder_path, movie_name, movie_year, default_quality, defa
 def rename_movie_folder_and_files(base_path):
     """
     Renames movie folders and files in the specified base path.
-    Folders are renamed to "<movie_name> (<movie_year>)".
-    Files are renamed to match the format "<movie_name> (<movie_year>) <quality>-<resolution>.<extension>".
-    Processes subtitle files in subfolders and moves empty folders to the trash.
     """
+    # Handle root-level movie files first
+    create_folder_for_root_movies(base_path)
+
+    # Proceed with renaming movie folders and files
     skipped_folders = []
     deleted_empty_folders = []
     deleted_subtitle_folders = []
@@ -164,37 +189,31 @@ def rename_movie_folder_and_files(base_path):
         # Process subtitle files in subfolders
         process_subtitles(new_folder_path, movie_name, movie_year, default_quality, default_resolution, deleted_subtitle_folders)
 
-    # Print summary of skipped folders
+    # Print summaries
     if skipped_folders:
         print("\nSummary of skipped folders (duplicates):")
         for folder in skipped_folders:
             print(f"  - {folder}")
 
-    # Print summary of deleted empty movie folders
     if deleted_empty_folders:
         print("\nSummary of deleted empty movie folders:")
         for folder in deleted_empty_folders:
             print(f"  - {folder}")
 
-    # Print summary of deleted subtitle folders
     if deleted_subtitle_folders:
         print("\nSummary of deleted empty subtitle folders:")
         for folder in deleted_subtitle_folders:
             print(f"  - {folder}")
 
 if __name__ == "__main__":
-    # Ensure the script is run with a valid command-line argument
     if len(sys.argv) != 2:
         print("Usage: python rename_movies.py <path_to_movie_folders>")
         sys.exit(1)
 
-    # Get the base path from the command-line argument
     base_path = sys.argv[1]
 
-    # Validate that the provided path exists and is a directory
     if not os.path.exists(base_path) or not os.path.isdir(base_path):
         print(f"Invalid path: {base_path}. Please provide a valid directory.")
         sys.exit(1)
 
-    # Rename movie folders and files
     rename_movie_folder_and_files(base_path)

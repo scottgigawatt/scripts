@@ -17,7 +17,7 @@ import json      # Library for handling JSON data
 import yaml      # Library for reading YAML files
 import sys       # Library for handling command-line arguments
 from datetime import datetime  # Library for handling date and time
-
+from datetime import timezone
 
 def send_discord_message(webhook_url, user_to_tag, header, title, message, color, fields, thumbnail_url):
     """
@@ -48,8 +48,9 @@ def send_discord_message(webhook_url, user_to_tag, header, title, message, color
         "title": title,
         "description": message,
         "color": color,  # Color should be in decimal format
-        "footer": {  # Add a footer with the relative timestamp format
-            "text": f"<t:{current_timestamp}:R>"
+        "timestamp": datetime.fromtimestamp(current_timestamp, tz=timezone.utc).isoformat(),
+        "footer": {
+            "text": "Timestamp"
         },
         "fields": fields if fields else []  # Add fields if specified
     }

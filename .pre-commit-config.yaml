@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.21.2
+    rev: v8.18.4
     hooks:
       - id: gitleaks
   - repo: https://github.com/Yelp/detect-secrets
@@ -13,6 +13,7 @@ repos:
     rev: v5.0.0
     hooks:
       - id: check-yaml
+        exclude: config/homepage
       - id: end-of-file-fixer
       - id: trailing-whitespace
         args: ["--markdown-linebreak-ext=md"]

@@ -1,31 +1,57 @@
-# Custom Scripts Repository
+<hr />
 
-Welcome to the Custom Scripts Repository! Here you'll find a collection of custom scripts written for various purposes, including bash, sh, zsh, macOS Automator scripts, and more.
+<p align="center">
+  <em>🛠️ Star this repo — it's like, infinite timelines worth of custom scripts, Morty. Infinite!</em>
+</p>
 
-## Description
+<p align="center">
+  <img src="https://img.shields.io/github/license/scottgigawatt/scripts?label=License%20Across%20Dimensions&color=blue" alt="License" />
+  <img src="https://img.shields.io/github/last-commit/scottgigawatt/scripts?label=Last%20Portal%20Jump&logo=git&color=green" alt="Last Commit" />
+  <img src="https://img.shields.io/github/repo-size/scottgigawatt/scripts?label=Code%20Payload&color=orange" alt="Repo Size" />
+</p>
 
-This repository houses a diverse range of scripts tailored to simplify tasks and enhance workflows across different platforms and environments. Whether you're looking for automation, system management, or utility scripts, you'll likely find something useful here.
+<p align="center">─── ⛧ ───</p>
 
-## Contents
+<p align="center">
+    <em>🌀 Got script problems, Morty? Hop in the portal, we're goin' to <strong>🔥HADES🔥</strong> for answers.</em>
+</p>
 
-- **Bash Scripts**: A collection of shell scripts written in bash for common tasks and automation.
-- **SH Scripts**: Shell scripts written in sh for compatibility across different Unix-like systems.
-- **Zsh Scripts**: Scripts designed specifically for the Zsh shell, offering enhanced functionality and customization.
-- **macOS Automator Scripts**: Automator workflows and scripts tailored for macOS users to streamline repetitive tasks and improve productivity.
-- **Miscellaneous Scripts**: Additional scripts covering a variety of purposes and languages, providing solutions beyond the traditional shell scripting realm.
+<p align="center">
+  <a href="https://discord.gg/BpEGzWwGYf">
+    <img src="https://img.shields.io/discord/1403601106315116626?label=%F0%9F%94%A5HADES%F0%9F%94%A5&logo=discord&logoColor=white&color=5865F2" alt="🔥HADES🔥 Discord" />
+  </a>
+</p>
 
-## Usage
+<hr />
 
-Feel free to explore the repository and use any scripts that suit your needs. Detailed instructions and usage guidelines are provided within each script's documentation or README file.
+# 🛠️ Custom Scripts Repository 🛠️
 
-## Contribution
+Welcome, ya chaotic interdimensional tech goblins! This is the **Custom Scripts Repository**, where scripts are crafted across infinite universes, tested in the fires of HADES, and occasionally written after three bottles of space booze. Whether it's bash, sh, zsh, or *that weird thing Automator does on macOS*, we've probably got it. If not… well, maybe in another timeline.
 
-If you have your own custom scripts to share or would like to improve existing ones, contributions are welcome! Fork the repository, make your changes, and submit a pull request. Your contributions help enrich the repository and benefit the community.
+## 🧬 Description
 
-## License
+This repo is like if *automation* and *chaos theory* had a baby and raised it in the Citadel of Ricks. You'll find tools to break, fix, and overcomplicate your system in ways only a true multidimensional traveler could appreciate. Automation? ✅. System tweaks? ✅. Dubiously safe scripts you probably shouldn't run in production? DOUBLE ✅.
 
-This repository is licensed under the [Apache License 2.0](LICENSE). See the LICENSE file for details.
+## 📦 Contents
 
-## Support
+- **🔨 Bash Scripts** – For when you need that sweet, sweet terminal dopamine hit.
+- **🌀 SH Scripts** – Compatible with *literally* everything… except maybe Jerry's laptop.
+- **⚡ Zsh Scripts** – Faster, shinier, sassier shell magic.
+- **🍏 macOS Automator Scripts** – Because sometimes you gotta automate the un-automatable on that overpriced fruit computer.
+- **👽 Miscellaneous Scripts** – All the weird stuff that didn't fit anywhere else. Could be genius, could be cursed.
 
-For any questions, issues, or suggestions regarding the scripts in this repository, please open an issue or reach out to the repository owner. I'm here to help!
+## 🚀 Usage
+
+Run them, break them, scream "Wubba Lubba Dub Dub!" when they work. Each script's folder usually contains its own *tiny portal gun manual* (README) with instructions.
+
+## 🧪 Contribution
+
+Got your own interdimensional scripts? Fork this thing, Morty. Add 'em in, make a pull request, and let's spread the chaos across the multiverse.
+
+## 📜 License
+
+This repo runs under the [Apache License 2.0](LICENSE) — because even in the infinite cosmos, lawyers exist.
+
+## 🆘 Support
+
+Open an issue here if you've got questions… or if your script accidentally summoned a Cronenberg. If it's urgent, well… you might just need to hop into the Discord and plead with the Council of Ricks.

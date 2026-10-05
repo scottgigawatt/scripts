@@ -18,7 +18,19 @@ from typing import cast
 
 from scripts.check_syntax import ROOT, repository_files, strip_json_comments
 
-TEXT_SUFFIXES = {".md", ".py", ".sh", ".bash", ".yml", ".yaml", ".toml", ".json", ".json5"}
+TEXT_SUFFIXES = {
+    ".md",
+    ".py",
+    ".sh",
+    ".bash",
+    ".yml",
+    ".yaml",
+    ".toml",
+    ".json",
+    ".json5",
+    ".txt",
+    ".conf",
+}
 EXCLUDED_NAMES = {"package-lock.json", ".secrets.baseline", "requirements-dev.txt"}
 
 
@@ -52,7 +64,16 @@ def main() -> int:
         for path in repository_files()
         if path.name not in EXCLUDED_NAMES
         and (
-            path.suffix in TEXT_SUFFIXES or path.name in {"Makefile", "CODEOWNERS", ".editorconfig"}
+            path.suffix in TEXT_SUFFIXES
+            or path.name
+            in {
+                "Makefile",
+                "CODEOWNERS",
+                ".editorconfig",
+                ".gitignore",
+                ".prettierignore",
+                ".shellcheckrc",
+            }
         )
     ]
     configuration = {

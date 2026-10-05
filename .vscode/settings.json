@@ -1,8 +1,196 @@
 {
+    //
+    // Copyright 2025-2026 Scott Gigawatt
+    //
+    // Licensed under the Apache License, Version 2.0.
+    //
+    // settings.json: Keep editing, formatting, schemas, and spelling aligned with CI.
+    //
+
+    // Accept real project vocabulary; never add secrets or arbitrary strings.
     "cSpell.words": [
+        "acodec",
+        "adtstoasc",
+        "afconvert",
+        "afinfo",
+        "afplay",
+        "airdate",
+        "asuser",
+        "AtomicParsley",
         "audiobook",
+        "Automator",
+        "blockquotes",
+        "Bluray",
+        "boxconfirm",
+        "charliermarsh",
+        "CLRCODE",
+        "COPYFILE",
+        "createdate",
+        "davidanson",
+        "docstrings",
+        "esbenp",
+        "exiftool",
+        "FFMETADATAFILE",
+        "ffprobe",
+        "figlet",
+        "frontmost",
+        "funcstack",
+        "ggrep",
         "gitleaks",
+        "gofind",
+        "googlecode",
+        "gsub",
+        "hostnames",
+        "Hypno",
+        "Hypnotoad",
+        "interdimensional",
+        "iTerm",
+        "libx",
+        "LIGHTDARK",
         "linebreak",
-        "tvdb"
-    ]
+        "lsext",
+        "mediainfo",
+        "movflags",
+        "mpegts",
+        "MSGCOLOR",
+        "MSSG",
+        "Notifiarr",
+        "osascript",
+        "plists",
+        "Plundarr",
+        "Privateerr",
+        "pycache",
+        "pyrightconfig",
+        "pythonpath",
+        "QuickTime",
+        "reencoding",
+        "rlpt",
+        "rlptgo",
+        "rmext",
+        "rpass",
+        "scottgigawatt",
+        "SetFile",
+        "shellcheck",
+        "SMBW",
+        "splt",
+        "subfolders",
+        "surrogateescape",
+        "tamasfe",
+        "tarbz",
+        "targz",
+        "timonwong",
+        "topdown",
+        "touchid",
+        "Tscheuss",
+        "tvdb",
+        "ubundo",
+        "ubunput",
+        "unredacted",
+        "untarbz",
+        "untargz",
+        "urlencode",
+        "vcodec",
+        "venv",
+        "webdl",
+        "webrip",
+        "wflow",
+        "xvjf",
+        "xvzf",
+        "ymlfile"
+    ],
+    // Keep formatting an explicit choice for every language.
+    "editor.formatOnSave": false,
+
+    // Avoid inventing a configure step and use the editor-bundled Ruff executable.
+    "makefile.configureOnOpen": false,
+    "ruff.importStrategy": "useBundled",
+    // Resolve developer-only dependencies from the local validation environment.
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    // Associate special repository files with their real parser and editor mode.
+    "files.associations": {
+        ".prettierrc.json5": "jsonc",
+        ".secrets.baseline": "json",
+        "**/CODEOWNERS": "plaintext",
+        "*.wflow": "xml"
+    },
+    // Format only with a repository configuration and without global module discovery.
+    "prettier.requireConfig": true,
+    "prettier.resolveGlobalModules": false,
+    "prettier.useEditorConfig": true,
+    // Mirror the portable TOML style and keep shell diagnostics enabled.
+    "evenBetterToml.formatter.indentString": "  ",
+    "shellcheck.enable": true,
+    // Validate workflow expressions and pre-commit settings against their schemas.
+    "yaml.format.enable": true,
+    "yaml.schemaStore.enable": true,
+    "yaml.validate": true,
+    "yaml.yamlVersion": "1.2",
+    "yaml.schemas": {
+        "https://json.schemastore.org/github-workflow.json": [
+            "**/.github/workflows/*.yml",
+            "**/.github/workflows/*.yaml"
+        ],
+        "https://json.schemastore.org/pre-commit-config.json": ".pre-commit-config.yaml"
+    },
+    // Mirror EditorConfig indentation; disable detection for a consistent editing experience.
+    "[awk]": {
+        "editor.detectIndentation": false,
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true
+    },
+    "[yaml]": {
+        "editor.detectIndentation": false,
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": false
+    },
+    "[github-actions-workflow]": {
+        "editor.detectIndentation": false,
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": false
+    },
+    "[json]": {
+        "editor.detectIndentation": false,
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[jsonc]": {
+        "editor.detectIndentation": false,
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": false
+    },
+    "[makefile]": {
+        "editor.detectIndentation": false,
+        "editor.tabSize": 4,
+        "editor.insertSpaces": false
+    },
+    "[markdown]": {
+        "editor.detectIndentation": false,
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.wordWrap": "on"
+    },
+    "[python]": {
+        "editor.detectIndentation": false,
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    },
+    "[shellscript]": {
+        "editor.detectIndentation": false,
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true
+    },
+    "[toml]": {
+        "editor.detectIndentation": false,
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.defaultFormatter": "tamasfe.even-better-toml"
+    }
 }

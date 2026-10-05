@@ -1,13 +1,25 @@
-import os
+#
+# Copyright 2025-2026 Scott Gigawatt
+#
+# Licensed under the Apache License, Version 2.0.
+#
+# subtitle_matcher.py: Match external subtitles to movie folders by filename similarity.
+#
+
+"""Match external subtitles to movie folders by filename similarity."""
+
 import argparse
 import logging
-from fuzzywuzzy import fuzz
-from fuzzywuzzy import process
+import os
 import shutil
+
+from fuzzywuzzy import fuzz, process
+
 
 def setup_logger(log_file):
     # Overwrite the log file if it already exists
-    open(log_file, 'w').close()
+    """Configure console and file logging, replacing the existing log."""
+    open(log_file, "w").close()
 
     # Clear any existing handlers to prevent duplication
     for handler in logging.root.handlers[:]:
@@ -25,20 +37,38 @@ def setup_logger(log_file):
     console_handler.setFormatter(console_formatter)
     logging.getLogger().addHandler(console_handler)
 
+
 def get_movie_folders(movies_folder):
-    return [os.path.join(movies_folder, d) for d in os.listdir(movies_folder) if os.path.isdir(os.path.join(movies_folder, d))]
+    """List immediate movie subdirectories in the library."""
+    return [
+        os.path.join(movies_folder, d)
+        for d in os.listdir(movies_folder)
+        if os.path.isdir(os.path.join(movies_folder, d))
+    ]
+
 
 def get_subtitle_files(subtitles_folder):
-    return [os.path.join(subtitles_folder, f) for f in os.listdir(subtitles_folder) if f.endswith('.srt')]
+    """List subtitle files available for matching."""
+    return [
+        os.path.join(subtitles_folder, f)
+        for f in os.listdir(subtitles_folder)
+        if f.endswith(".srt")
+    ]
+
 
 def has_subtitles(movie_folder):
-    return any(f.endswith('.srt') for f in os.listdir(movie_folder))
+    """Check whether a movie folder already contains an SRT subtitle."""
+    return any(f.endswith(".srt") for f in os.listdir(movie_folder))
+
 
 def match_subtitles(movie_name, subtitle_files, threshold):
+    """Return filename matches that meet the confidence threshold."""
     matches = process.extract(movie_name, subtitle_files, scorer=fuzz.partial_ratio)
     return [match for match in matches if match[1] >= threshold]
 
+
 def main(movies_folder, subtitles_folder, confidence, dry_run, log_file):
+    """Match subtitles and report moves, logging even during a dry run."""
     setup_logger(log_file)
 
     movie_folders = get_movie_folders(movies_folder)
@@ -63,12 +93,16 @@ def main(movies_folder, subtitles_folder, confidence, dry_run, log_file):
                 high_confidence = [match for match in possible_matches if match[1] >= confidence]
                 if high_confidence:
                     folders_with_high_confidence_matches += 1
-                    high_confidence_matches.extend([(movie_name, match[0]) for match in high_confidence])
+                    high_confidence_matches.extend(
+                        [(movie_name, match[0]) for match in high_confidence]
+                    )
                     if not dry_run:
                         # Move the first high-confidence subtitle file
                         for match in high_confidence:
                             subtitle_path = match[0]
-                            destination = os.path.join(movie_folder, os.path.basename(subtitle_path))
+                            destination = os.path.join(
+                                movie_folder, os.path.basename(subtitle_path)
+                            )
                             shutil.move(subtitle_path, destination)
                             logging.info(f"Moved '{subtitle_path}' to '{destination}'")
                             moved_files_summary.append((movie_name, subtitle_path))
@@ -78,10 +112,14 @@ def main(movies_folder, subtitles_folder, confidence, dry_run, log_file):
     logging.info("\nSummary:")
     logging.info(f"Total movie folders checked: {len(movie_folders)}")
     logging.info(f"Movie folders without subtitles: {len(no_subtitle_folders)}")
-    logging.info(f"Movie folders without subtitles that have matches >= {confidence}% confidence: {folders_with_high_confidence_matches}")
+    logging.info(
+        f"Movie folders without subtitles that have matches >= {confidence}% confidence: {folders_with_high_confidence_matches}"
+    )
     print(f"Total movie folders checked: {len(movie_folders)}")
     print(f"Movie folders without subtitles: {len(no_subtitle_folders)}")
-    print(f"Movie folders without subtitles that have matches >= {confidence}% confidence: {folders_with_high_confidence_matches}")
+    print(
+        f"Movie folders without subtitles that have matches >= {confidence}% confidence: {folders_with_high_confidence_matches}"
+    )
 
     # Write detailed summary of high confidence matches to log only
     if high_confidence_matches:
@@ -92,14 +130,24 @@ def main(movies_folder, subtitles_folder, confidence, dry_run, log_file):
     if not dry_run and moved_files_summary:
         print("\nSummary of Moved High Confidence Subtitle Files:")
         for movie_name, subtitle_path in moved_files_summary:
-            print(f"Moved subtitle file '{os.path.basename(subtitle_path)}' to movie folder '{movie_name}'")
+            print(
+                f"Moved subtitle file '{os.path.basename(subtitle_path)}' to movie folder '{movie_name}'"
+            )
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Check and match subtitles to movie folders.")
     parser.add_argument("movies_folder", help="Path to the folder containing movie folders.")
     parser.add_argument("subtitles_folder", help="Path to the folder containing subtitles.")
-    parser.add_argument("--confidence", type=int, default=90, help="Confidence threshold for subtitle matches (default: 90).")
-    parser.add_argument("--dry-run", action="store_true", help="Print actions without making changes.")
+    parser.add_argument(
+        "--confidence",
+        type=int,
+        default=90,
+        help="Confidence threshold for subtitle matches (default: 90).",
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Print actions without making changes."
+    )
     parser.add_argument("--log-file", default="subtitle_matcher.log", help="Path to the log file.")
 
     args = parser.parse_args()

@@ -1,25 +1,26 @@
-# -----------------------------------------------------------------------------
-# send_discord_message.py
-#
-# A Python script to send customized messages to a Discord channel using a webhook.
-# Reads settings from a YAML config file specified via the command line.
-#
-# Usage:
-#   python send_discord_message.py <config.yml>
-#
-# Requirements:
-# - Python 3.x
-# - requests, PyYAML
-# -----------------------------------------------------------------------------
+#!/usr/bin/env python3
 
-import requests  # Library for making HTTP requests
-import json      # Library for handling JSON data
-import yaml      # Library for reading YAML files
-import sys       # Library for handling command-line arguments
-from datetime import datetime  # Library for handling date and time
-from datetime import timezone
+#
+# Copyright 2025-2026 Scott Gigawatt
+#
+# Licensed under the Apache License, Version 2.0.
+#
+# send_discord_message.py: Send a configured Discord embed through a webhook.
+#
 
-def send_discord_message(webhook_url, user_to_tag, header, title, message, color, fields, thumbnail_url):
+"""Send a configured Discord embed through a webhook."""
+
+import json
+import sys
+from datetime import UTC, datetime
+
+import requests
+import yaml
+
+
+def send_discord_message(
+    webhook_url, user_to_tag, header, title, message, color, fields, thumbnail_url
+):
     """
     Sends a message to a Discord channel using a webhook.
 
@@ -48,11 +49,9 @@ def send_discord_message(webhook_url, user_to_tag, header, title, message, color
         "title": title,
         "description": message,
         "color": color,  # Color should be in decimal format
-        "timestamp": datetime.fromtimestamp(current_timestamp, tz=timezone.utc).isoformat(),
-        "footer": {
-            "text": "Timestamp"
-        },
-        "fields": fields if fields else []  # Add fields if specified
+        "timestamp": datetime.fromtimestamp(current_timestamp, tz=UTC).isoformat(),
+        "footer": {"text": "Timestamp"},
+        "fields": fields if fields else [],  # Add fields if specified
     }
 
     # Add the thumbnail URL to the embed if it is specified
@@ -60,10 +59,7 @@ def send_discord_message(webhook_url, user_to_tag, header, title, message, color
         embed["thumbnail"] = {"url": thumbnail_url}
 
     # Prepare the data payload to send to the webhook
-    data = {
-        "content": content,
-        "embeds": [embed]
-    }
+    data = {"content": content, "embeds": [embed]}
 
     # Send the request to the Discord webhook
     headers = {"Content-Type": "application/json"}
@@ -86,7 +82,7 @@ if __name__ == "__main__":
 
     # Read configuration from the YAML file
     try:
-        with open(config_file, "r") as ymlfile:
+        with open(config_file) as ymlfile:
             config = yaml.safe_load(ymlfile)  # Load the YAML configuration file
     except FileNotFoundError:
         print(f"Error: {config_file} not found in the current directory.")
@@ -103,7 +99,14 @@ if __name__ == "__main__":
     thumbnail_url = config.get("thumbnail_url")
 
     # Validate that all required fields are present
-    if not webhook_url or not user_to_tag or not hex_color or not header or not title or not message:
+    if (
+        not webhook_url
+        or not user_to_tag
+        or not hex_color
+        or not header
+        or not title
+        or not message
+    ):
         print("Error: Missing required information in config.yml.")
         exit(1)
 
@@ -115,4 +118,6 @@ if __name__ == "__main__":
         exit(1)
 
     # Send the message to Discord
-    send_discord_message(webhook_url, user_to_tag, header, title, message, color, fields, thumbnail_url)
+    send_discord_message(
+        webhook_url, user_to_tag, header, title, message, color, fields, thumbnail_url
+    )

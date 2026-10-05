@@ -1,8 +1,18 @@
-import os
+#
+# Copyright 2025-2026 Scott Gigawatt
+#
+# Licensed under the Apache License, Version 2.0.
+#
+# check_av1_codec.py: Inspect MP4 streams for AV1 video and missing audio.
+#
+
+"""Inspect MP4 streams for AV1 video and missing audio."""
+
 import argparse
-import subprocess
 import logging
+import os
 import shlex
+import subprocess
 
 
 def setup_logger(debug):
@@ -24,15 +34,10 @@ def run_ffprobe_raw(file_path, debug=False):
     """Run ffprobe to extract raw stream information from a video file."""
     # Escape the path for logging and subprocess
     safe_path = escape_path(file_path)
-    cmd = [
-        "ffprobe",
-        "-v", "quiet",
-        "-show_streams",
-        file_path
-    ]
+    cmd = ["ffprobe", "-v", "quiet", "-show_streams", file_path]
     try:
         # Run ffprobe without shell=True to avoid manual escape issues
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True)
 
         # Log the command being executed with the escaped path
         logging.info(f"Running command: ffprobe -v quiet -show_streams {safe_path}")
@@ -78,8 +83,9 @@ def expand_and_escape_path(path):
     expanded_path = os.path.expanduser(path)
 
     # Remove quotes if path is wrapped in single or double quotes
-    if (expanded_path.startswith("'") and expanded_path.endswith("'")) or \
-       (expanded_path.startswith('"') and expanded_path.endswith('"')):
+    if (expanded_path.startswith("'") and expanded_path.endswith("'")) or (
+        expanded_path.startswith('"') and expanded_path.endswith('"')
+    ):
         expanded_path = expanded_path[1:-1]
 
     # Normalize and escape spaces
@@ -87,6 +93,7 @@ def expand_and_escape_path(path):
 
 
 def main(directory, single_file, debug):
+    """Inspect the selected file or directory and print stream findings."""
     setup_logger(debug)
 
     av1_files = []
@@ -131,11 +138,15 @@ def main(directory, single_file, debug):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Check if .mp4 files use AV1 codec and detect missing audio tracks.")
+    parser = argparse.ArgumentParser(
+        description="Check if .mp4 files use AV1 codec and detect missing audio tracks."
+    )
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--directory", help="Directory to recursively scan for .mp4 files.")
     group.add_argument("--file", help="Path to a single .mp4 file to check.")
-    parser.add_argument("--debug", action="store_true", help="Enable debug mode to print detailed command output.")
+    parser.add_argument(
+        "--debug", action="store_true", help="Enable debug mode to print detailed command output."
+    )
     args = parser.parse_args()
 
     main(args.directory, args.file, args.debug)

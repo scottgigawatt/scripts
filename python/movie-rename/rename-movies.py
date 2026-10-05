@@ -1,8 +1,19 @@
+#
+# Copyright 2025-2026 Scott Gigawatt
+#
+# Licensed under the Apache License, Version 2.0.
+#
+# rename-movies.py: Rename movie folders and media files, preserving discarded files in trash.
+#
+
+"""Rename movie folders and media files, preserving discarded files in trash."""
+
 import os
 import re
-import sys
 import shutil
+import sys
 from datetime import datetime
+
 
 def parse_movie_info(name):
     """
@@ -15,6 +26,7 @@ def parse_movie_info(name):
     movie_name = re.sub(r"[.\s]+", " ", match.group(1)).strip()
     movie_year = match.group(2)
     return movie_name, movie_year
+
 
 def parse_quality_and_resolution(name):
     """
@@ -38,6 +50,7 @@ def parse_quality_and_resolution(name):
     resolution = resolution_match.group(1) if resolution_match else "UnknownResolution"
     return quality, resolution
 
+
 def move_to_trash(path):
     """
     Moves a file or folder to the trash. Ensures unique names by appending a timestamp or counter.
@@ -60,6 +73,7 @@ def move_to_trash(path):
     shutil.move(path, trash_path)
     print(f"Moved to trash: {path} -> {trash_path}")
 
+
 def create_folder_for_root_movies(base_path):
     """
     Moves movie files in the root of the provided folder into new folders named
@@ -67,7 +81,7 @@ def create_folder_for_root_movies(base_path):
     """
     for file_name in os.listdir(base_path):
         file_path = os.path.join(base_path, file_name)
-        if os.path.isfile(file_path) and file_name.lower().endswith(('.mp4', '.mkv')):
+        if os.path.isfile(file_path) and file_name.lower().endswith((".mp4", ".mkv")):
             movie_name, movie_year = parse_movie_info(file_name)
             if not movie_name or not movie_year:
                 print(f"Skipping root movie file (unable to parse): {file_name}")
@@ -84,7 +98,15 @@ def create_folder_for_root_movies(base_path):
             shutil.move(file_path, new_file_path)
             print(f"Moved root-level movie file: {file_name} -> {new_folder_name}/")
 
-def process_subtitles(folder_path, movie_name, movie_year, default_quality, default_resolution, deleted_subtitle_folders):
+
+def process_subtitles(
+    folder_path,
+    movie_name,
+    movie_year,
+    default_quality,
+    default_resolution,
+    deleted_subtitle_folders,
+):
     """
     Processes subtitle files in subfolders. Moves English subtitles to the main folder,
     renames them using default quality and resolution if they are unknown, and moves
@@ -99,9 +121,13 @@ def process_subtitles(folder_path, movie_name, movie_year, default_quality, defa
                     quality, resolution = parse_quality_and_resolution(file_name)
                     # Use default quality and resolution if unknown
                     quality = quality if quality != "UnknownQuality" else default_quality
-                    resolution = resolution if resolution != "UnknownResolution" else default_resolution
+                    resolution = (
+                        resolution if resolution != "UnknownResolution" else default_resolution
+                    )
                     if "sdh" in file_name.lower():
-                        new_file_name = f"{movie_name} ({movie_year}) {quality}-{resolution}.SDH.srt"
+                        new_file_name = (
+                            f"{movie_name} ({movie_year}) {quality}-{resolution}.SDH.srt"
+                        )
                     else:
                         new_file_name = f"{movie_name} ({movie_year}) {quality}-{resolution}.srt"
                     new_file_path = os.path.join(folder_path, new_file_name)
@@ -117,6 +143,7 @@ def process_subtitles(folder_path, movie_name, movie_year, default_quality, defa
             if not os.listdir(dir_path):  # Folder is empty
                 move_to_trash(dir_path)
                 deleted_subtitle_folders.append(dir_path)
+
 
 def rename_movie_folder_and_files(base_path):
     """
@@ -172,14 +199,16 @@ def rename_movie_folder_and_files(base_path):
 
             # Determine file extension
             file_ext = os.path.splitext(file_name)[1].lower()
-            if file_ext in ['.mkv', '.mp4']:
+            if file_ext in [".mkv", ".mp4"]:
                 # Rename movie files
                 default_quality, default_resolution = parse_quality_and_resolution(file_name)
-                new_file_name = f"{movie_name} ({movie_year}) {default_quality}-{default_resolution}{file_ext}"
+                new_file_name = (
+                    f"{movie_name} ({movie_year}) {default_quality}-{default_resolution}{file_ext}"
+                )
                 new_file_path = os.path.join(new_folder_path, new_file_name)
                 os.rename(file_path, new_file_path)
                 print(f"Renamed file: {file_name} -> {new_file_name}")
-            elif file_ext == '.srt':
+            elif file_ext == ".srt":
                 # Skip as subtitles are processed later
                 continue
             else:
@@ -187,7 +216,14 @@ def rename_movie_folder_and_files(base_path):
                 move_to_trash(file_path)
 
         # Process subtitle files in subfolders
-        process_subtitles(new_folder_path, movie_name, movie_year, default_quality, default_resolution, deleted_subtitle_folders)
+        process_subtitles(
+            new_folder_path,
+            movie_name,
+            movie_year,
+            default_quality,
+            default_resolution,
+            deleted_subtitle_folders,
+        )
 
     # Print summaries
     if skipped_folders:
@@ -204,6 +240,7 @@ def rename_movie_folder_and_files(base_path):
         print("\nSummary of deleted empty subtitle folders:")
         for folder in deleted_subtitle_folders:
             print(f"  - {folder}")
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

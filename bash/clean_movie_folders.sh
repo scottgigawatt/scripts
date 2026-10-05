@@ -1,4 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+#
+# Copyright 2025-2026 Scott Gigawatt
+#
+# Licensed under the Apache License, Version 2.0.
+#
+# clean_movie_folders.sh: Move non-movie entries from immediate movie folders into local trash.
+#
 
 #
 # Move unnecessary files and directories in Movie Folders to Trash
@@ -24,7 +32,13 @@ set -o pipefail
 # Supported movie file extensions
 MOVIE_EXTENSIONS=("*.mp4" "*.mkv" "*.avi" "*.mov" "*.flv" "*.wmv" "*.mpeg" "*.mpg")
 
-# Function to print usage instructions
+#
+# usage: Print command usage and stop after invalid arguments.
+#
+# Parameters: None.
+#
+# Returns: Exit with status 1.
+#
 usage() {
     echo "Usage: $0 --dry-run | --run"
     exit 1
@@ -41,10 +55,18 @@ if [ "$MODE" != "--dry-run" ] && [ "$MODE" != "--run" ]; then
     usage
 fi
 
-# Function to check if a file is a movie file
+#
+# is_movie_file: Check a basename against supported movie extension patterns.
+#
+# Parameters: $1 - File basename to inspect.
+#
+# Returns: Status 0 for a supported movie; otherwise status 1.
+#
 is_movie_file() {
     local file="$1"
     for ext in "${MOVIE_EXTENSIONS[@]}"; do
+        # The extension contains an intentional glob pattern, not a literal value.
+        # shellcheck disable=SC2053
         if [[ "$file" == $ext ]]; then
             return 0
         fi
@@ -52,7 +74,13 @@ is_movie_file() {
     return 1
 }
 
-# Function to clean up a directory, keeping only movie files and root-level '@eaDir' folders
+#
+# clean_directory: Move unnecessary immediate entries into the local trash directory.
+#
+# Parameters: $1 - Movie directory to inspect.
+#
+# Returns: Status 0 on success; exits on a failed operation.
+#
 clean_directory() {
     local dir="$1"
     local trash_dir="./____trash"

@@ -1,0 +1,16 @@
+{
+    "name": "@scottgigawatt/scripts-tools",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Locked developer-only spelling, Markdown, and Python typing tools.",
+    "license": "Apache-2.0",
+    "engines": {
+        "node": ">=22.18.0"
+    },
+    "devDependencies": {
+        "@cspell/cspell-json-reporter": "10.3.6",
+        "cspell": "10.3.6",
+        "markdownlint-cli2": "0.23.3",
+        "pyright": "1.1.414"
+    }
+}

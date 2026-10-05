@@ -1,4 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+#
+# Copyright 2025-2026 Scott Gigawatt
+#
+# Licensed under the Apache License, Version 2.0.
+#
+# move_empty_folders_to_trash.sh: Collect empty movie folders in a local trash directory.
+#
 
 #
 # Move Empty Nested Movie Folders to Trash
@@ -25,7 +33,13 @@ set -o pipefail
 # Supported movie file extensions
 MOVIE_EXTENSIONS=("*.mp4" "*.mkv" "*.avi" "*.mov" "*.flv" "*.wmv" "*.mpeg" "*.mpg")
 
-# Function to print usage instructions
+#
+# usage: Print command usage and stop after invalid arguments.
+#
+# Parameters: None.
+#
+# Returns: Exit with status 1.
+#
 usage() {
     echo "Usage: $0 --dry-run | --run"
     exit 1
@@ -42,7 +56,13 @@ if [ "$MODE" != "--dry-run" ] && [ "$MODE" != "--run" ]; then
     usage
 fi
 
-# Function to determine if a directory contains any movie files
+#
+# contains_movie_files: Check for immediate movie files in a directory.
+#
+# Parameters: $1 - Directory to inspect.
+#
+# Returns: Status 0 when movie files exist; otherwise status 1.
+#
 contains_movie_files() {
     local dir="$1"
     for ext in "${MOVIE_EXTENSIONS[@]}"; do
@@ -53,7 +73,13 @@ contains_movie_files() {
     return 1
 }
 
-# Function to determine if a directory is empty or contains only empty sub-directories, '@eaDir', or '.DS_Store' files
+#
+# is_empty_directory: Check recursively for files beyond Synology metadata and Finder state.
+#
+# Parameters: $1 - Directory to inspect.
+#
+# Returns: Status 0 for an empty directory; otherwise status 1.
+#
 is_empty_directory() {
     local dir="$1"
     # Check if the directory contains any files other than '@eaDir' and '.DS_Store'
@@ -69,7 +95,13 @@ is_empty_directory() {
     return 0
 }
 
-# Function to move empty directories to the ____trash folder
+#
+# move_empty_directories_to_trash: Report or move empty directories into local trash.
+#
+# Parameters: None.
+#
+# Returns: Status 0 on success; exits on a failed operation.
+#
 move_empty_directories_to_trash() {
     TRASH_DIR="./____trash"
     if [ "$MODE" == "--run" ]; then

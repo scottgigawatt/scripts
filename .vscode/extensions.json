@@ -1,0 +1,24 @@
+{
+    //
+    // Copyright 2025-2026 Scott Gigawatt
+    //
+    // Licensed under the Apache License, Version 2.0.
+    //
+    // extensions.json: Recommend focused tools for the repository languages and checks.
+    //
+
+    "recommendations": [
+        "davidanson.vscode-markdownlint",                       // Lint Markdown structure and style.
+        "EditorConfig.EditorConfig",                            // Apply portable repository whitespace rules.
+        "esbenp.prettier-vscode",                               // Format supported files on explicit request.
+        "github.vscode-github-actions",                         // Validate and navigate GitHub Actions workflows.
+        "charliermarsh.ruff",                                   // Apply shared Python lint and formatting rules.
+        "ms-python.python",                                     // Provide Python language, testing, and debug support.
+        "ms-python.vscode-pylance",                             // Apply strict helper typing in the editor.
+        "ms-vscode.makefile-tools",                             // Discover and run documented Make targets.
+        "redhat.vscode-yaml",                                   // Validate YAML with repository schemas.
+        "streetsidesoftware.code-spell-checker",                // Check prose and identifiers with shared vocabulary.
+        "tamasfe.even-better-toml",                             // Validate and format TOML configuration.
+        "timonwong.shellcheck"                                  // Surface shell diagnostics in source files.
+    ]
+}

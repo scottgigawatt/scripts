@@ -1,4 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+#
+# Copyright 2025-2026 Scott Gigawatt
+#
+# Licensed under the Apache License, Version 2.0.
+#
+# ensure_movie_folder_names.sh: Match movie folder names to their media files and collect empty folders.
+#
 
 #
 # Ensure Movie Folder Names Match Movie File Names
@@ -29,7 +37,13 @@ set -o pipefail
 # Supported movie file extensions
 MOVIE_EXTENSIONS=("*.mp4" "*.mkv" "*.avi" "*.mov" "*.flv" "*.wmv" "*.mpeg" "*.mpg")
 
-# Function to print usage instructions
+#
+# usage: Print command usage and stop after invalid arguments.
+#
+# Parameters: None.
+#
+# Returns: Exit with status 1.
+#
 usage() {
     echo "Usage: $0 --dry-run | --run"
     exit 1
@@ -46,14 +60,26 @@ if [ "$MODE" != "--dry-run" ] && [ "$MODE" != "--run" ]; then
     usage
 fi
 
-# Function to print the current directory structure
+#
+# print_current_structure: Display the current directory tree for a dry run.
+#
+# Parameters: None.
+#
+# Returns: Status 0 on success; exits on a failed command.
+#
 print_current_structure() {
     echo "Current Directory Structure:"
     find . -type d ! -name '@eaDir' | sed 's/[^-][^\/]*\//--/g;s/^/ /;s/--/|--/'
     echo
 }
 
-# Function to rename movie folders to match movie file names
+#
+# rename_movie_folders: Rename movie folders to include the media title and year.
+#
+# Parameters: None.
+#
+# Returns: Status 0 on success; exits on a failed operation.
+#
 rename_movie_folders() {
     for ext in "${MOVIE_EXTENSIONS[@]}"; do
         find . -type f -name "$ext" | while read -r file; do
@@ -80,7 +106,13 @@ rename_movie_folders() {
     done
 }
 
-# Function to move empty directories to the ____trash folder
+#
+# move_empty_directories_to_trash: Report or move empty directories into local trash.
+#
+# Parameters: None.
+#
+# Returns: Status 0 on success; exits on a failed operation.
+#
 move_empty_directories_to_trash() {
     TRASH_DIR="./____trash"
     if [ "$MODE" == "--run" ]; then
@@ -108,7 +140,13 @@ move_empty_directories_to_trash() {
     done
 }
 
-# Function to print the updated directory structure
+#
+# print_updated_structure: Display the current directory tree after a preview.
+#
+# Parameters: None.
+#
+# Returns: Status 0 on success; exits on a failed command.
+#
 print_updated_structure() {
     echo "Updated Directory Structure:"
     find . -type d ! -name '@eaDir' | sed 's/[^-][^\/]*\//--/g;s/^/ /;s/--/|--/'

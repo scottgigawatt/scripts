@@ -1,13 +1,28 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+#
+# Copyright 2025-2026 Scott Gigawatt
+#
+# Licensed under the Apache License, Version 2.0.
+#
+# touchid_for_sudo.sh: Enable macOS Touch ID for sudo and adjust iTerm2 session persistence.
+#
 
 # Retrieve current user information
 CURRENT_USER=$(stat -f %Su /dev/console)
 USER_ID=$(id -u "$CURRENT_USER")
 
-# Function to configure Sudo Touch ID for macOS 14 and above
+#
+# configure_touch_id_macos14: Configure Touch ID through the macOS 14 or newer PAM override.
+#
+# Parameters: None.
+#
+# Returns: Status of the dialog or final configuration command.
+#
 configure_touch_id_macos14() {
     local sudo_local_path="/private/etc/pam.d/sudo_local"
-    local third_line=$(sed -n 3p "$sudo_local_path" 2>/dev/null)
+    local third_line
+    third_line=$(sed -n 3p "$sudo_local_path" 2>/dev/null)
 
     if [[ "$third_line" == "auth       sufficient     pam_tid.so" ]]; then
         osascript -e 'tell application (path to frontmost application as text) to display dialog "Sudo Touch ID is already configured." buttons {"OK"} with icon note'
@@ -18,15 +33,23 @@ configure_touch_id_macos14() {
     fi
 }
 
-# Function to configure Sudo Touch ID for macOS 13 and below
+#
+# configure_touch_id_macos13: Configure Touch ID through the macOS 13 or older PAM sudo file.
+#
+# Parameters: None.
+#
+# Returns: Status of the dialog or final configuration command.
+#
 configure_touch_id_macos13() {
     local sudo_path="/private/etc/pam.d/sudo"
-    local second_line=$(sed -n 2p "$sudo_path" 2>/dev/null)
+    local second_line
+    second_line=$(sed -n 2p "$sudo_path" 2>/dev/null)
 
     if [[ "$second_line" == "auth       sufficient     pam_tid.so" ]]; then
         osascript -e 'tell application (path to frontmost application as text) to display dialog "Sudo Touch ID is already configured." buttons {"OK"} with icon note'
     else
-        sed -i '.bak' '2s/^/auth       sufficient     pam_tid.so\'$'\n/' "$sudo_path"
+        # BSD sed needs a backslash followed by a literal newline in this replacement.
+        sed -i '.bak' $'2s/^/auth       sufficient     pam_tid.so\\\n/' "$sudo_path"
         osascript -e 'tell application (path to frontmost application as text) to display dialog "Sudo Touch ID is now enabled.\nPlease restart your Terminal." buttons {"OK"} with icon note'
     fi
 }

@@ -18,7 +18,7 @@ Scripts is a collection of independent shell, Python, and macOS Automator utilit
 - `notifiarr/`: A historical configuration example; preserve its example-only credential boundary.
 - `scripts/`: Repository validation helpers.
 - `tests/`: Isolated tests for repository tooling.
-- `docs/`: Coding, documentation, and testing guidance.
+- `docs/`: Contributor, security, and support policies plus coding, documentation, and testing guidance; start with `docs/index.md`.
 - `.github/`: Validation/security workflows, templates, dependency policy, and CODEOWNERS.
 
 ## Work boundaries

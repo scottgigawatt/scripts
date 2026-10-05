@@ -12,4 +12,4 @@ Remove credentials, webhook URLs, personal paths, and private logs before postin
 
 ## Set expectations
 
-These independent tools have different dependencies and platform assumptions. Check the selected file's usage, the [README inventory](README.md#choose-a-tool), and [testing guidance](docs/testing.md) before opening an issue. Support is provided as maintainer time permits.
+These independent tools have different dependencies and platform assumptions. Check the selected file's usage, the [README inventory](../README.md#choose-a-tool), and [testing guidance](testing.md) before opening an issue. Support is provided as maintainer time permits.

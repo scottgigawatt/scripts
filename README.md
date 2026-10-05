@@ -54,11 +54,11 @@ make check
 
 `make check` runs the same all-file pre-commit checks used for pull requests, followed by the validation-helper tests. Syntax checks parse scripts and Automator files without executing their actions. Strict Python checking currently covers repository validation helpers and tests; legacy utilities receive Ruff lint, formatting, and syntax checks.
 
-Use [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup and pull-request guidance, [`docs/coding-style.md`](docs/coding-style.md) for shared shell/Python conventions, and [`docs/testing.md`](docs/testing.md) for check coverage and safe behavior testing. AI coding tools should start with [`AGENTS.md`](AGENTS.md).
+Browse the [documentation index](docs/index.md) for all guides and policies. Use [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) for setup and pull-request guidance, [`docs/coding-style.md`](docs/coding-style.md) for shared shell/Python conventions, and [`docs/testing.md`](docs/testing.md) for check coverage and safe behavior testing. AI coding tools should start with [`AGENTS.md`](AGENTS.md).
 
 ## Get help and report problems
 
-Use the [issue templates](https://github.com/scottgigawatt/scripts/issues/new/choose) for reproducible bugs, features, or documentation fixes. See [`SUPPORT.md`](SUPPORT.md) for useful evidence and the [HADES community](https://discord.gg/BpEGzWwGYf) for non-sensitive questions. Report vulnerabilities privately using [`SECURITY.md`](SECURITY.md).
+Use the [issue templates](https://github.com/scottgigawatt/scripts/issues/new/choose) for reproducible bugs, features, or documentation fixes. See [`docs/SUPPORT.md`](docs/SUPPORT.md) for useful evidence and the [HADES community](https://discord.gg/BpEGzWwGYf) for non-sensitive questions. Report vulnerabilities privately using [`docs/SECURITY.md`](docs/SECURITY.md).
 
 ## License
 

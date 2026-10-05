@@ -24,10 +24,16 @@ The development environment uses pinned Python and Node tooling. Runtime require
 | `make lint` | Checks Python lint rules and formatting |
 | `make format` | Applies Ruff Python formatting; inspect the resulting diff |
 | `make test-types` | Strict Pyright for validation helpers under `scripts/` and tests under `tests/` |
-| `make spellcheck` | Checks project text using the workspace vocabulary |
+| `make spellcheck` | Checks every repository text file using the workspace vocabulary and verifies none were skipped |
 | `make test` | Runs isolated tests for repository validation helpers |
 
 The checked-in pre-commit configuration is the shared hook definition for local commits and CI. Gitleaks scans a disposable snapshot of current tracked and new files permitted by Git ignore rules, so clean CI checkouts receive a full source scan. Local environments and ignored credentials stay outside that snapshot; symbolic links are rejected to protect files outside the checkout. Workflow checks include Actionlint; shell checks include ShellCheck. Python syntax, Ruff lint, and Ruff formatting cover the legacy utilities, while strict typing currently covers new validation tooling and tests.
+
+## Verify spelling coverage
+
+`make spellcheck` discovers every tracked file and new file permitted by Git ignore rules, then reads content to distinguish text from binary assets. It includes hidden configuration, extensionless files such as `LICENSE`, developer requirements, dependency locks, scanner baseline metadata, and Automator XML with embedded AppleScript. It reports binary assets individually; PNG previews require visual review because their pixels are not text. Local virtual environments, installed dependencies, Git internals, and ignored private configuration are outside repository-source coverage.
+
+The checker forces CSpell to process each text document and validates its per-file coverage report. Because CSpell treats `package-lock.json` as binary, identical lock contents are checked through a temporary JSON filename and diagnostics map back to the original. A skipped document fails the check. Generated hashes and encoded data retain narrow or built-in pattern exclusions; deliberate existing literals require a nearby explanation rather than misspelled dictionary entries. Genuine vocabulary belongs in `.vscode/settings.json` under `cSpell.words`.
 
 ## Understand the limits
 

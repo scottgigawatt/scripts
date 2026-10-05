@@ -4,7 +4,7 @@ Keep changes focused, verifiable, and kind to the files they touch. The multiver
 
 ## Before you start
 
-Read the [README](README.md), [coding style](docs/coding-style.md), [documentation style](docs/documentation-style.md), and [security policy](SECURITY.md). Check existing issues and discuss large behavior changes before restructuring unrelated utilities.
+Read the [README](../README.md), [coding style](coding-style.md), [documentation style](documentation-style.md), and [security policy](SECURITY.md). Check existing issues and discuss large behavior changes before restructuring unrelated utilities.
 
 The repository contains independent tools for different platforms. Preserve existing command-line interfaces, directory layouts, author attribution, and supported shell interpreters unless the change explicitly updates them.
 
@@ -28,7 +28,7 @@ Use four spaces in shell, Python, JSON, and JSON with Comments; use two spaces i
 
 Install the recommendations in `.vscode/extensions.json` if you use VS Code. Workspace format-on-save is disabled. Ruff owns Python formatting; Prettier is available for explicit formatting of supported Markdown and JSON files. YAML, TOML, jq, and aligned workspace JSONC are excluded from Prettier.
 
-Code comments are plain English and explain intent or constraints. Shell functions document their purpose, parameters, and return behavior using the exact shape in [coding style](docs/coding-style.md). Documentation keeps the repository's light interdimensional voice while leaving commands, diagnostics, risks, and security instructions literal.
+Code comments are plain English and explain intent or constraints. Shell functions document their purpose, parameters, and return behavior using the exact shape in [coding style](coding-style.md). Documentation keeps the repository's light interdimensional voice while leaving commands, diagnostics, risks, and security instructions literal.
 
 ## Validate your change
 
@@ -36,7 +36,7 @@ Code comments are plain English and explain intent or constraints. Shell functio
 make check
 ```
 
-For targeted checks, use `make syntax`, `make lint`, `make test-types`, `make spellcheck`, or `make test`. Use `make format` to apply Python formatting deliberately, then inspect the diff and rerun the applicable checks. [Testing guidance](docs/testing.md) explains what each target covers.
+For targeted checks, use `make syntax`, `make lint`, `make test-types`, `make spellcheck`, or `make test`. Use `make format` to apply Python formatting deliberately, then inspect the diff and rerun the applicable checks. [Testing guidance](testing.md) explains what each target covers.
 
 All project-owned Python receives Ruff lint and formatting checks. Strict Pyright currently covers validation helpers under `scripts/` and tests under `tests/`; legacy utilities under `python/` remain outside the strict type-checking scope. New validation helpers must stay strictly typed. Extending strict checking to legacy utilities requires a focused migration with suitable dependency stubs and behavior tests.
 

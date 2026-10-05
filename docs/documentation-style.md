@@ -39,7 +39,7 @@ Do not wrap routine commands in alerts or place alerts back to back. Put the req
 
 Use `<details>` only for optional examples or long diagnostics. Never hide prerequisites, primary steps, or risks. Keep task lists in issue and PR templates; use numbered steps for static procedures. Diagrams need adjacent prose explaining the same relationship.
 
-Preserve established names such as `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `SECURITY.md`, and `SUPPORT.md`. Use lowercase kebab-case for ordinary guides. Update links and referenced paths together when moving a document.
+Keep `README.md` and root `AGENTS.md` at the repository root, scoped `AGENTS.md` files in the directories they govern, and issue/PR templates under `.github/`. Put contributor, security, and support policies in `docs/`, preserving their established names: `CONTRIBUTING.md`, `SECURITY.md`, and `SUPPORT.md`. Use lowercase kebab-case for ordinary guides and maintain [the documentation index](index.md). Update links and referenced paths together when moving a document.
 
 ## Review the result
 

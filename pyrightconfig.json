@@ -1,0 +1,19 @@
+{
+    //
+    // Copyright 2025-2026 Scott Gigawatt
+    //
+    // Licensed under the Apache License, Version 2.0.
+    //
+    // pyrightconfig.json: Enforce strict types for developer helpers and their tests.
+    //
+
+    // Strict typing begins with the developer tools and their deterministic tests.
+    // Existing utilities remain covered by Ruff and syntax checks while they migrate.
+    "include": ["scripts", "tests"],
+    "exclude": ["**/node_modules", "**/__pycache__", "**/.*"],
+    "typeCheckingMode": "strict",
+    "reportUnnecessaryTypeIgnoreComment": "error",
+    "pythonVersion": "3.11",
+    "venvPath": ".",
+    "venv": ".venv"
+}

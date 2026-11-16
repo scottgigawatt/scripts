@@ -1,0 +1,21 @@
+#
+# Copyright 2025-2026 Scott Gigawatt
+#
+# Licensed under the Apache License, Version 2.0.
+#
+# ruff.toml: Share Python lint and formatting rules with editors and CI.
+#
+
+# Preserve a practical Python floor for the standalone utilities.
+target-version = "py311"
+line-length = 100
+src = ["python", "scripts", "tests"]
+force-exclude = true
+
+# Match the correctness, import, bug, and modern-usage checks in the sibling repos.
+[lint]
+select = ["E4", "E7", "E9", "F", "I", "B", "UP"]
+
+[format]
+indent-style = "space"
+line-ending = "lf"

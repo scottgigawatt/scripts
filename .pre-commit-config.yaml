@@ -1,18 +1,101 @@
+#
+# Copyright 2025-2026 Scott Gigawatt
+#
+# Licensed under the Apache License, Version 2.0.
+#
+# .pre-commit-config.yaml: Align repository checks with Privateerr and Plundarr.
+#
+
+# Use Python 3 for isolated hooks; developer tools require Python 3.11 or newer.
+default_language_version:
+  python: python3
+
 repos:
+  # Keep both the fast secret scanner and the reviewed historical baseline.
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.30.0
+    rev: v8.30.1
     hooks:
       - id: gitleaks
+        # Upstream's staged-only entry does not scan clean CI checkouts.
+        entry: .venv/bin/python -m scripts.check_secrets
+        pass_filenames: false
+        always_run: true
+
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
       - id: detect-secrets
         args: ["--baseline", ".secrets.baseline"]
-        exclude: package.lock.json
+
+  # General hygiene remains separate from language-specific validation.
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
+      - id: check-added-large-files
+      - id: check-executables-have-shebangs
+      - id: check-merge-conflict
+      - id: check-shebang-scripts-are-executable
+        # This library is sourced by an interactive Bash session, never executed.
+        exclude: ^bash/bash_functions\.sh$
+      - id: check-toml
       - id: check-yaml
       - id: end-of-file-fixer
+        # Automator owns bundle serialization; validate property lists without rewriting them.
+        exclude: ^automator/.*\.workflow/
       - id: trailing-whitespace
         args: ["--markdown-linebreak-ext=md"]
+        exclude: ^automator/.*\.workflow/
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.38.0
+    hooks:
+      - id: yamllint
+        args: [--strict]
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.12
+    hooks:
+      - id: actionlint
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1-1
+    hooks:
+      - id: shellcheck
+
+  # Make, editors, and automation use one pinned Ruff installation.
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: Check Python with Ruff
+        entry: .venv/bin/ruff check
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: Check Python formatting with Ruff
+        entry: .venv/bin/ruff format --check
+        language: system
+        types: [python]
+      - id: repository-syntax
+        name: Check source and configuration syntax without execution
+        entry: .venv/bin/python -m scripts.check_syntax
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: python-types
+        name: Strict developer-tool Python types
+        entry: node_modules/.bin/pyright --pythonpath .venv/bin/python --warnings
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: markdownlint-cli2
+        name: Check every Markdown document
+        entry: node_modules/.bin/markdownlint-cli2
+        language: system
+        pass_filenames: false
+        types: [markdown]
+      - id: spelling
+        name: Check repository spelling with the editor vocabulary
+        entry: .venv/bin/python -m scripts.check_spelling
+        language: system
+        pass_filenames: false
+        always_run: true

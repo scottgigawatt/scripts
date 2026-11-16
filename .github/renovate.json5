@@ -1,0 +1,48 @@
+{
+    //
+    // Copyright 2025-2026 Scott Gigawatt
+    //
+    // Licensed under the Apache License, Version 2.0.
+    //
+    // renovate.json5: Keep development and utility dependencies reviewable and current.
+    //
+
+    // Reuse the sibling update policy, with maintainer review before every merge.
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:recommended",
+        "helpers:pinGitHubActionDigests",
+        ":enablePreCommit"
+    ],
+    "timezone": "America/New_York",
+    "schedule": ["before 8am"],
+    "dependencyDashboard": true,
+    "automerge": false,
+    "rebaseWhen": "behind-base-branch",
+    "labels": ["dependencies"],
+    "assignees": ["scottgigawatt"],
+    "reviewers": ["scottgigawatt"],
+
+    // One dependency bot owns the languages and package files present here.
+    "enabledManagers": ["github-actions", "npm", "pip_requirements", "pre-commit"],
+    "packageRules": [
+        {
+            "groupName": "GitHub Actions",
+            "matchManagers": ["github-actions"]
+        },
+        {
+            "groupName": "pre-commit hooks",
+            "matchManagers": ["pre-commit"]
+        },
+        {
+            "groupName": "developer Node tools",
+            "matchFileNames": ["package.json"]
+        },
+        {
+            "description": "Keep Python development tools exact and hash-verified",
+            "matchManagers": ["pip_requirements"],
+            "matchFileNames": ["requirements-dev.txt"],
+            "rangeStrategy": "pin"
+        }
+    ]
+}

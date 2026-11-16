@@ -1,0 +1,16 @@
+#
+# Copyright 2025-2026 Scott Gigawatt
+#
+# Licensed under the Apache License, Version 2.0.
+#
+# config.yml: Configure repository issue intake and support links.
+#
+
+blank_issues_enabled: false
+contact_links:
+  - name: HADES community support
+    url: https://discord.gg/BpEGzWwGYf
+    about: Ask non-sensitive setup questions and compare notes with the community.
+  - name: Report a security vulnerability privately
+    url: https://github.com/scottgigawatt/scripts/security/advisories/new
+    about: Keep security details and credential exposure out of public issues.

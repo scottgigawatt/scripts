@@ -1,3 +1,16 @@
-[[paths]]
-  path = "**/.secrets.baseline"
-  ignore = true
+#
+# Copyright 2025-2026 Scott Gigawatt
+#
+# Licensed under the Apache License, Version 2.0.
+#
+# .gitleaks.toml: Keep upstream secret detection active with one reviewed exclusion.
+#
+
+# A local configuration replaces defaults unless it explicitly extends them.
+[extend]
+useDefault = true
+
+# The detect-secrets baseline contains scanner fingerprints, not usable credentials.
+[allowlist]
+description = "Reviewed detect-secrets baseline fingerprints"
+paths = ['''(^|/)\.secrets\.baseline$''']

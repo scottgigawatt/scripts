@@ -1,0 +1,89 @@
+#
+# Copyright 2025-2026 Scott Gigawatt
+#
+# Licensed under the Apache License, Version 2.0.
+#
+# validate-pr.yml: Check every pull request and main commit without running utilities.
+#
+
+name: "Inspect the Script Portal 🧪"
+
+#
+# A broad trigger keeps documentation and configuration changes behind the same gate.
+#
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  #
+  # Run the complete static gate and isolated helper tests on each supported runner.
+  #
+  validate-pr:
+    name: "Validate scripts (${{ matrix.os }}, Python ${{ matrix.python }})"
+    #
+    # Check the supported Python floor on Linux and host-specific parsing on macOS.
+    #
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python: "3.11"
+          - os: macos-latest
+            python: "3.13.16"
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+
+    steps:
+      #
+      # Match the verified checkout revision in Privateerr and Plundarr.
+      #
+      - name: "Open the Source Portal 🌀"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      #
+      # Exercise the supported Python floor and the selected macOS checker runtime.
+      #
+      - name: "Prepare the Python Tools 🐍"
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      #
+      # Use a supported Node runtime for the locked Markdown, spelling, and typing tools.
+      #
+      - name: "Prepare the Node Tools 🛠️"
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f  # v6.3.0
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      #
+      # Both ecosystems use committed hashes or integrity locks; lifecycle scripts stay disabled.
+      #
+      - name: "Install the Locked Tools 🧰"
+        run: make setup
+
+      #
+      # Parser tests use temporary fixtures, and production utility files are never imported.
+      #
+      - name: "Validate the Scripts 🔎"
+        run: make check

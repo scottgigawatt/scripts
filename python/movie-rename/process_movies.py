@@ -1,21 +1,34 @@
+#
+# Copyright 2025-2026 Scott Gigawatt
+#
+# Licensed under the Apache License, Version 2.0.
+#
+# process_movies.py: Update movie streams, merge subtitles, and archive source files.
+#
+
+"""Update movie streams, merge subtitles, and archive source files."""
+
 import os
-import subprocess
-import sys
 import pprint
 import shlex
 import shutil
+import subprocess
+import sys
 
 DEBUG = False
 FORCE = False
 
+
 def run_command(cmd):
+    """Run a media command and report diagnostic output when debugging."""
     if DEBUG:
-        print("Running command:", ' '.join(shlex.quote(arg) for arg in cmd))
-    result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+        print("Running command:", " ".join(shlex.quote(arg) for arg in cmd))
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
     if DEBUG:
         print("Command output:", result.stdout)
         print("Command error (if any):", result.stderr)
     return result
+
 
 def filter_files_in_folder(folder, extensions):
     """
@@ -23,50 +36,66 @@ def filter_files_in_folder(folder, extensions):
     """
     return [f for f in os.listdir(folder) if f.lower().endswith(tuple(extensions))]
 
+
 def get_audio_track_count(video_file_path):
     """
     Retrieves the number of audio tracks in the video file.
     """
     cmd = [
-        'ffprobe',
-        '-v', 'error',
-        '-select_streams', 'a',
-        '-show_entries', 'stream=index',
-        '-of', 'csv=p=0',
-        video_file_path
+        "ffprobe",
+        "-v",
+        "error",
+        "-select_streams",
+        "a",
+        "-show_entries",
+        "stream=index",
+        "-of",
+        "csv=p=0",
+        video_file_path,
     ]
     result = run_command(cmd)
-    return len(result.stdout.strip().split('\n'))
+    return len(result.stdout.strip().split("\n"))
+
 
 def get_audio_track_language(video_file_path, track_index):
     """
     Retrieves the language of the specified audio track.
     """
     cmd = [
-        'ffprobe',
-        '-v', 'error',
-        f'-select_streams', f'a:{track_index}',
-        '-show_entries', 'stream_tags=language',
-        '-of', 'csv=p=0',
-        video_file_path
+        "ffprobe",
+        "-v",
+        "error",
+        "-select_streams",
+        f"a:{track_index}",
+        "-show_entries",
+        "stream_tags=language",
+        "-of",
+        "csv=p=0",
+        video_file_path,
     ]
     result = run_command(cmd)
     return result.stdout.strip()
+
 
 def get_audio_channels(video_file_path, track_index):
     """
     Retrieves the number of channels for the specified audio track.
     """
     cmd = [
-        'ffprobe',
-        '-v', 'error',
-        f'-select_streams', f'a:{track_index}',
-        '-show_entries', 'stream=channels',
-        '-of', 'csv=p=0',
-        video_file_path
+        "ffprobe",
+        "-v",
+        "error",
+        "-select_streams",
+        f"a:{track_index}",
+        "-show_entries",
+        "stream=channels",
+        "-of",
+        "csv=p=0",
+        video_file_path,
     ]
     result = run_command(cmd)
     return int(result.stdout.strip())
+
 
 def add_audio_metadata_commands(video_file_path, command):
     """
@@ -77,7 +106,7 @@ def add_audio_metadata_commands(video_file_path, command):
     if audio_count > 0:
         for i in range(audio_count):
             audio_language = get_audio_track_language(video_file_path, i)
-            if audio_language in ['eng', 'und']:  # Keep English or undefined tracks
+            if audio_language in ["eng", "und"]:  # Keep English or undefined tracks
                 channels = get_audio_channels(video_file_path, i)
                 if channels == 1:
                     base_title = "Mono Audio"
@@ -86,14 +115,19 @@ def add_audio_metadata_commands(video_file_path, command):
                 else:
                     base_title = "Surround Audio"
 
-                command.extend([
-                    f'-metadata:s:a:{i}', 'language=eng',
-                    f'-metadata:s:a:{i}', f'title={base_title}'
-                ])
+                command.extend(
+                    [
+                        f"-metadata:s:a:{i}",
+                        "language=eng",
+                        f"-metadata:s:a:{i}",
+                        f"title={base_title}",
+                    ]
+                )
             else:
                 # Exclude non-English audio tracks
                 print(f"Excluding non-English audio track a:{i} ({audio_language})")
-                command.extend(['-map', f'-0:a:{i}'])
+                command.extend(["-map", f"-0:a:{i}"])
+
 
 def convert_mkv_to_mp4(video_file_path):
     """
@@ -101,15 +135,23 @@ def convert_mkv_to_mp4(video_file_path):
     """
     output_file = os.path.splitext(video_file_path)[0] + ".mp4"
     cmd = [
-        'ffmpeg', '-y', '-i', video_file_path,
-        '-c:v', 'copy', '-c:a', 'copy',
-        '-c:s', 'mov_text',
-        output_file
+        "ffmpeg",
+        "-y",
+        "-i",
+        video_file_path,
+        "-c:v",
+        "copy",
+        "-c:a",
+        "copy",
+        "-c:s",
+        "mov_text",
+        output_file,
     ]
     print(f"Converting {video_file_path} to MP4.")
     run_command(cmd)
     print(f"Converted {video_file_path} to {output_file}.")
     return output_file
+
 
 def process_movie_file(video_file_path, subtitle_files, output_file_path):
     """
@@ -121,35 +163,35 @@ def process_movie_file(video_file_path, subtitle_files, output_file_path):
         return
 
     # Build the ffmpeg command
-    command = ['ffmpeg', '-y' if FORCE else '-n', '-i', video_file_path]
+    command = ["ffmpeg", "-y" if FORCE else "-n", "-i", video_file_path]
 
     # Add subtitle files (ensure full paths)
-    for subtitle_file in sorted(subtitle_files, key=lambda x: 'sdh' in x.lower()):
+    for subtitle_file in sorted(subtitle_files, key=lambda x: "sdh" in x.lower()):
         subtitle_file_path = os.path.join(os.path.dirname(video_file_path), subtitle_file)
-        command.extend(['-i', subtitle_file_path])
+        command.extend(["-i", subtitle_file_path])
 
     # Map video and audio streams
-    command.extend(['-map', '0', '-c:v', 'copy', '-c:a', 'copy'])
+    command.extend(["-map", "0", "-c:v", "copy", "-c:a", "copy"])
 
     # Map subtitles and set metadata
-    for i, subtitle_file in enumerate(sorted(subtitle_files, key=lambda x: 'sdh' in x.lower())):
-        map_command = ['-map', f"{i + 1}"]
-        language_command = ['-metadata:s:s:' + str(i), 'language=eng']
+    for i, subtitle_file in enumerate(sorted(subtitle_files, key=lambda x: "sdh" in x.lower())):
+        map_command = ["-map", f"{i + 1}"]
+        language_command = ["-metadata:s:s:" + str(i), "language=eng"]
 
-        if 'sdh' in subtitle_file.lower():
-            track_name = 'Subtitle Track [SDH]'
+        if "sdh" in subtitle_file.lower():
+            track_name = "Subtitle Track [SDH]"
         else:
-            track_name = 'Subtitle Track'
+            track_name = "Subtitle Track"
 
-        metadata_command = ['-metadata:s:s:' + str(i), f'title={track_name}']
+        metadata_command = ["-metadata:s:s:" + str(i), f"title={track_name}"]
         command.extend(map_command + language_command + metadata_command)
 
     # Set video and audio metadata
-    command.extend(['-metadata:s:v:0', 'language=eng'])
+    command.extend(["-metadata:s:v:0", "language=eng"])
     add_audio_metadata_commands(video_file_path, command)
 
     # Set subtitle codec
-    command.extend(['-c:s', 'mov_text'])
+    command.extend(["-c:s", "mov_text"])
 
     # Add the output file path
     command.append(output_file_path)
@@ -174,7 +216,9 @@ def process_movie_file(video_file_path, subtitle_files, output_file_path):
     movie_folder = os.path.dirname(video_file_path)
     for file_name in os.listdir(movie_folder):
         file_path = os.path.join(movie_folder, file_name)
-        if file_path != output_file_path and file_name != "backup":  # Skip the target output file and the backup directory
+        if (
+            file_path != output_file_path and file_name != "backup"
+        ):  # Skip the target output file and the backup directory
             shutil.move(file_path, os.path.join(backup_dir, file_name))
             print(f"Moved {file_path} to {backup_dir}")
 
@@ -183,12 +227,13 @@ def process_movie_file(video_file_path, subtitle_files, output_file_path):
     os.rename(output_file_path, renamed_output_file)
     print(f"Renamed output file {output_file_path} to {renamed_output_file}")
 
+
 def process_movie_folder(movie_folder_path, folders_with_no_subtitles):
     """
     Processes a folder containing movie files and subtitles.
     """
-    movie_files = filter_files_in_folder(movie_folder_path, ['.mp4', '.mkv'])
-    subtitle_files = filter_files_in_folder(movie_folder_path, ['.srt'])
+    movie_files = filter_files_in_folder(movie_folder_path, [".mp4", ".mkv"])
+    subtitle_files = filter_files_in_folder(movie_folder_path, [".srt"])
 
     # If no video files, skip processing
     if not movie_files:
@@ -205,7 +250,7 @@ def process_movie_folder(movie_folder_path, folders_with_no_subtitles):
         video_file_path = os.path.join(movie_folder_path, video_file)
 
         # Convert MKV to MP4 if necessary
-        if video_file_path.endswith('.mkv'):
+        if video_file_path.endswith(".mkv"):
             video_file_path = convert_mkv_to_mp4(video_file_path)
 
         base_name = os.path.splitext(video_file)[0]
@@ -214,11 +259,18 @@ def process_movie_folder(movie_folder_path, folders_with_no_subtitles):
         # Process the movie file
         process_movie_file(video_file_path, subtitle_files, output_file_path)
 
+
 def process_all_movie_folders(movies_path):
     """
     Processes all movie folders in the given path.
     """
-    movie_folders = sorted([os.path.join(movies_path, d) for d in os.listdir(movies_path) if os.path.isdir(os.path.join(movies_path, d))])
+    movie_folders = sorted(
+        [
+            os.path.join(movies_path, d)
+            for d in os.listdir(movies_path)
+            if os.path.isdir(os.path.join(movies_path, d))
+        ]
+    )
     folders_with_no_subtitles = []
 
     for movie_folder in movie_folders:
@@ -233,6 +285,7 @@ def process_all_movie_folders(movies_path):
         for folder in folders_with_no_subtitles:
             print(f"  - {folder}")
 
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python process_movies.py <movies_folder_path> [--debug] [--force]")
@@ -240,10 +293,10 @@ if __name__ == "__main__":
 
     movies_folder_path = sys.argv[1]
 
-    if '--debug' in sys.argv:
+    if "--debug" in sys.argv:
         DEBUG = True
 
-    if '--force' in sys.argv:
+    if "--force" in sys.argv:
         FORCE = True
 
     if not os.path.isdir(movies_folder_path):

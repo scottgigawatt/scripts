@@ -1,5 +1,29 @@
-venv
+#
+# Copyright 2025-2026 Scott Gigawatt
+#
+# Licensed under the Apache License, Version 2.0.
+#
+# .gitignore: Keep local tools, credentials, and generated output untracked.
+#
+
+# Disposable developer environments and caches.
+.venv/
+venv/
+node_modules/
+__pycache__/
+*.py[cod]
+.ruff_cache/
+.pytest_cache/
+.pre-commit-cache/
+coverage.xml
+.coverage
+
+# Local operating-system files, logs, and existing private data.
 .DS_Store
-python/metadata/test
 *.log
+python/metadata/test/
 config*.yml
+!.github/ISSUE_TEMPLATE/config.yml
+.env
+.env.*
+!.env.example

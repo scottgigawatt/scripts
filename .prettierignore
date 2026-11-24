@@ -1,0 +1,21 @@
+#
+# Copyright 2025-2026 Scott Gigawatt
+#
+# Licensed under the Apache License, Version 2.0.
+#
+# .prettierignore: Keep generated locks and local validation environments intact.
+#
+
+.git
+.venv
+node_modules
+package-lock.json
+.secrets.baseline
+automator
+
+# Language-specific tools and authored configuration own these file types.
+**/*.yml
+**/*.yaml
+**/*.toml
+**/*.jq
+.vscode/*.json

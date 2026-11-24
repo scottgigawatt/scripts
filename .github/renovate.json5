@@ -1,0 +1,73 @@
+{
+    //
+    // Copyright 2025-2026 Scott Gigawatt
+    //
+    // Licensed under the Apache License, Version 2.0.
+    //
+    // renovate.json5: Keep development and utility dependencies reviewable and current.
+    //
+
+    // Reuse the sibling update policy, with maintainer review before every merge.
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:recommended",
+        "helpers:pinGitHubActionDigests",
+        ":enablePreCommit"
+    ],
+    "timezone": "America/New_York",
+    "schedule": ["* 0-7 1 * *"],
+    "updateNotScheduled": false,
+    "prConcurrentLimit": 2,
+    "dependencyDashboard": {"enabled": true},
+    "automerge": false,
+    "rebaseWhen": "behind-base-branch",
+    "labels": ["dependencies"],
+    "assignees": ["scottgigawatt"],
+    "reviewers": ["scottgigawatt"],
+
+    // One dependency bot owns the languages and package files present here.
+    "enabledManagers": ["github-actions", "npm", "pip_requirements", "pre-commit"],
+    "packageRules": [
+        {
+            "groupName": "GitHub Actions",
+            "matchManagers": ["github-actions"]
+        },
+        {
+            "groupName": "pre-commit hooks",
+            "matchManagers": ["pre-commit"]
+        },
+        {
+            "groupName": "developer Node tools",
+            "matchFileNames": ["package.json"]
+        },
+        {
+            "description": "Keep Python dependencies exact and development tools hash-verified",
+            "matchManagers": ["pip_requirements"],
+            "rangeStrategy": "pin"
+        },
+        {
+            "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+            "groupName": "monthly maintenance"
+        },
+        {
+            "matchManagers": ["pip_requirements"],
+            "matchFileNames": ["python/**/requirements.txt"],
+            "schedule": ["* 0-7 * * 1"],
+            "groupName": "weekly production dependencies"
+        },
+        {
+            "matchUpdateTypes": ["major"],
+            "dependencyDashboardApproval": true,
+            "automerge": false,
+            "groupName": null
+        }
+    ],
+    "vulnerabilityAlerts": {
+        "enabled": true,
+        "dependencyDashboardApproval": false,
+        "groupName": null,
+        "automerge": false,
+        "schedule": ["at any time"],
+        "updateNotScheduled": true
+    }
+}

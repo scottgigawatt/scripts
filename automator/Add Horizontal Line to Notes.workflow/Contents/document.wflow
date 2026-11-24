@@ -81,14 +81,14 @@ ACASmAUAFABQAUAFABQAUAFABQAUAKvUfUfzoASgAoAKACgAoAKACgAoAKACgAoA
 Veo+o/nSls/R/kAlMAoAKACgAoAKACgAoAKACgAoAKAP/9k=
 "
 
-set filen to "/tmp/line-" &amp; (time of (current date)) &amp; ".jpg"
+set temporaryFilename to "/tmp/line-" &amp; (time of (current date)) &amp; ".jpg"
 
-do shell script "printf %s " &amp; quoted form of base64line &amp; " | tr -d '\\r\\n' | /usr/bin/openssl enc -base64 -d -A &gt; " &amp; quoted form of filen
+do shell script "printf %s " &amp; quoted form of base64line &amp; " | tr -d '\\r\\n' | /usr/bin/openssl enc -base64 -d -A &gt; " &amp; quoted form of temporaryFilename
 
-set the clipboard to (read (POSIX file filen) as JPEG picture)
+set the clipboard to (read (POSIX file temporaryFilename) as JPEG picture)
 delay 0.2
 tell application "System Events" to keystroke "v" using {command down}
-do shell script "rm -f " &amp; quoted form of filen</string>
+do shell script "rm -f " &amp; quoted form of temporaryFilename</string>
 				</dict>
 				<key>BundleIdentifier</key>
 				<string>com.apple.Automator.RunScript</string>

@@ -1,4 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+#
+# Copyright 2025-2026 Scott Gigawatt
+#
+# Licensed under the Apache License, Version 2.0.
+#
+# flatten_movies.sh: Flatten nested movie files into immediate folders and collect empty folders.
+#
 
 #
 # Flatten Movie Directories Script
@@ -29,7 +37,13 @@ set -o pipefail
 # Supported movie file extensions
 MOVIE_EXTENSIONS=("*.mp4" "*.mkv" "*.avi" "*.mov" "*.flv" "*.wmv" "*.mpeg" "*.mpg")
 
-# Function to print usage instructions
+#
+# usage: Print command usage and stop after invalid arguments.
+#
+# Parameters: None.
+#
+# Returns: Exit with status 1.
+#
 usage() {
     echo "Usage: $0 --dry-run | --run"
     exit 1
@@ -46,14 +60,26 @@ if [ "$MODE" != "--dry-run" ] && [ "$MODE" != "--run" ]; then
     usage
 fi
 
-# Function to print the current directory structure
+#
+# print_current_structure: Display the current directory tree for a dry run.
+#
+# Parameters: None.
+#
+# Returns: Status 0 on success; exits on a failed command.
+#
 print_current_structure() {
     echo "Current Directory Structure:"
     find . -type d ! -name '@eaDir' | sed 's/[^-][^\/]*\//--/g;s/^/ /;s/--/|--/'
     echo
 }
 
-# Function to print the flattened directory structure
+#
+# print_flattened_structure: Display the proposed immediate movie folder structure.
+#
+# Parameters: None.
+#
+# Returns: Status 0 on success; exits on a failed command.
+#
 print_flattened_structure() {
     echo "Flattened Directory Structure:"
     for ext in "${MOVIE_EXTENSIONS[@]}"; do
@@ -66,7 +92,13 @@ print_flattened_structure() {
     echo
 }
 
-# Function to move movie files to the appropriate directories
+#
+# move_movie_files: Report or move nested movies into immediate movie folders.
+#
+# Parameters: None.
+#
+# Returns: Status 0 on success; exits on a failed operation.
+#
 move_movie_files() {
     for ext in "${MOVIE_EXTENSIONS[@]}"; do
         find . -type f -name "$ext" | while read -r file; do
@@ -94,7 +126,13 @@ move_movie_files() {
     done
 }
 
-# Function to move empty directories to the ____trash folder
+#
+# move_empty_directories_to_trash: Report or move empty directories into local trash.
+#
+# Parameters: None.
+#
+# Returns: Status 0 on success; exits on a failed operation.
+#
 move_empty_directories_to_trash() {
     TRASH_DIR="./____trash"
     if [ "$MODE" == "--run" ]; then

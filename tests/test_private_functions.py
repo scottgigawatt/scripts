@@ -172,5 +172,174 @@ class PrivateConfigurationTests(unittest.TestCase):
                 self.assertIn("set SSH_HOSTS", result.stderr)
 
 
+class OperationalSafetyTests(unittest.TestCase):
+    """Exercise failure paths against disposable files and inert external commands."""
+
+    def setUp(self) -> None:
+        """Create a private fixture directory for each shell invocation."""
+        self.temporary = tempfile.TemporaryDirectory(prefix="scripts-operation-test-")
+        self.addCleanup(self.temporary.cleanup)
+        self.directory = Path(self.temporary.name)
+
+    def run_shell(self, script: str) -> subprocess.CompletedProcess[str]:
+        """Execute extracted functions with controlled inputs and no live services."""
+        return subprocess.run(
+            ["/bin/bash", "-c", script],
+            cwd=self.directory,
+            env={"PATH": os.defpath},
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    def test_failed_metadata_conversion_preserves_original_and_existing_output(self) -> None:
+        """Partial converter output never replaces original or preexisting files."""
+        original = self.directory / "S01E01.mp4"
+        collision = self.directory / "new_S01E01.mp4"
+        original.write_text("original media", encoding="utf-8")
+        collision.write_text("existing media", encoding="utf-8")
+        script = (
+            'ffmpeg() { for output; do :; done; printf partial > "$output"; return 27; }\n'
+            + function_definition("set_metadata")
+            + '\nset_metadata "Example Show" 1\n'
+        )
+        result = self.run_shell(script)
+        self.assertEqual(result.returncode, 27, result.stderr)
+        self.assertEqual(original.read_text(), "original media")
+        self.assertEqual(collision.read_text(), "existing media")
+        self.assertEqual(
+            sorted(path.name for path in self.directory.iterdir()), ["S01E01.mp4", "new_S01E01.mp4"]
+        )
+
+    def test_successful_metadata_conversion_replaces_only_selected_media(self) -> None:
+        """A successful output replaces its source and leaves unrelated files intact."""
+        original = self.directory / "S01E01.mp4"
+        original.write_text("original media", encoding="utf-8")
+        unrelated = self.directory / "notes.txt"
+        unrelated.write_text("keep this", encoding="utf-8")
+        script = (
+            'ffmpeg() { for output; do :; done; printf converted > "$output"; }\n'
+            + function_definition("set_metadata")
+            + '\nset_metadata "Example Show" 1\n'
+        )
+        result = self.run_shell(script)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(original.read_text(), "converted")
+        self.assertEqual(unrelated.read_text(), "keep this")
+        self.assertEqual(len(list(self.directory.iterdir())), 2)
+
+    def test_video_conversion_reports_ffmpeg_failure(self) -> None:
+        """The conversion helper cannot hide a failure behind tracing cleanup."""
+        script = (
+            "ffmpeg() { return 27; }\nffprobe() { :; }\nggrep() { return 1; }\n"
+            + function_definition("all2mp4")
+            + '\nall2mp4 "fixture.mp4"\n'
+        )
+        result = self.run_shell(script)
+        self.assertEqual(result.returncode, 27, result.stderr)
+
+    def test_failed_batch_conversion_does_not_move_originals(self) -> None:
+        """Every in-place batch helper stops before moving a failed source."""
+        season = self.directory / "Example Show" / "Season 01"
+        season.mkdir(parents=True)
+        original = season / "S01E01.mp4"
+        original.write_text("original media", encoding="utf-8")
+        for name in ["all2mp4_batch", "processTvEpisodes", "renameTvEpisodes"]:
+            with self.subTest(function=name):
+                script = (
+                    "ffmpeg() { :; }\nffprobe() { :; }\n"
+                    "all2mp4() { return 27; }\nAtomicParsley() { return 27; }\n"
+                    'mp4info() { printf "Name: Example\\n"; }\n'
+                    'ggrep() { printf "1\\n"; }\n'
+                    "mv() { printf unexpected-move; return 39; }\n"
+                    + function_definition(name)
+                    + "\n"
+                    + name
+                    + ' --folder "Example Show" --in-place\n'
+                )
+                result = self.run_shell(script)
+                self.assertEqual(result.returncode, 27, result.stderr)
+                self.assertNotIn("unexpected-move", result.stdout)
+                self.assertEqual(original.read_text(), "original media")
+
+    def test_failed_join_preserves_existing_intermediate_names(self) -> None:
+        """A failed join removes only its own partial files and preserves caller files."""
+        for name in ["intermediate1.ts", "intermediate2.ts", "first.mp4", "second.mp4"]:
+            (self.directory / name).write_text("existing media", encoding="utf-8")
+        script = (
+            'ffmpeg() { for output; do :; done; printf partial > "$output"; return 27; }\n'
+            + function_definition("join_mp4_files")
+            + "\njoin_mp4_files first.mp4 second.mp4 output.mp4\n"
+        )
+        result = self.run_shell(script)
+        self.assertEqual(result.returncode, 27, result.stderr)
+        self.assertEqual(len(list(self.directory.iterdir())), 4)
+        for path in self.directory.iterdir():
+            self.assertEqual(path.read_text(), "existing media")
+
+    def test_failed_episode_conversion_does_not_modify_artwork(self) -> None:
+        """A failed episode conversion stops before modifying any existing output."""
+        (self.directory / "episode.mp4").write_text("original media", encoding="utf-8")
+        script = (
+            "ffmpeg() { return 27; }\n"
+            "AtomicParsley() { printf unexpected-artwork; }\n"
+            + function_definition("setEpisode")
+            + "\nsetEpisode\n"
+        )
+        result = self.run_shell(script)
+        self.assertEqual(result.returncode, 27, result.stderr)
+        self.assertNotIn("unexpected-artwork", result.stdout)
+        self.assertEqual((self.directory / "episode.mp4").read_text(), "original media")
+
+    def test_sync_reports_rsync_failure(self) -> None:
+        """A displayed error cannot turn a failed sync into a successful exit."""
+        script = (
+            'resolvePath() { printf "%s\\n" "$1"; }\n'
+            "printCallingFunctionName() { printf folderSync; }\n"
+            "colorEcho() { :; }\nbox() { :; }\nfiglet() { :; }\n"
+            "sudo() { return 27; }\n"
+            + function_definition("folderSync")
+            + "\nfolderSync . . <<< yes\n"
+        )
+        result = self.run_shell(script)
+        self.assertEqual(result.returncode, 27, result.stderr)
+
+    def test_key_upload_keeps_port_and_key_data_separate(self) -> None:
+        """An SSH port is an argument and shell metacharacters in comments remain data."""
+        key = "ssh-ed25519 fixture-key Example's $(printf unexpected) key"
+        (self.directory / "key.pub").write_text(key, encoding="utf-8")
+        script = (
+            'ssh() { printf "<%s>\\n" "$@" >> arguments; '
+            'if [[ ${!#} == *"IFS= read"* ]]; then cat >> input; fi; }\n'
+            + function_definition("uploadKey")
+            + "\nuploadKey --file key.pub --host example@example.invalid --port 2222\n"
+        )
+        result = self.run_shell(script)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        arguments = (self.directory / "arguments").read_text()
+        self.assertIn("<-p>\n<2222>\n<-->\n<example@example.invalid>", arguments)
+        self.assertNotIn(key, arguments)
+        self.assertEqual((self.directory / "input").read_text(), key + "\n")
+
+    def test_key_upload_rejects_stale_caller_settings_and_setup_failure(self) -> None:
+        """Missing arguments and failed remote setup cannot reuse globals or upload data."""
+        (self.directory / "key.pub").write_text("fixture key", encoding="utf-8")
+        definition = function_definition("uploadKey")
+        result = self.run_shell(
+            "KEY_FILE=key.pub; REMOTE_HOST=example@example.invalid; REMOTE_PORT=2222\n"
+            "ssh() { printf unexpected-contact; }\n"
+            + definition
+            + "\nuploadKey --host example@example.invalid\n"
+        )
+        self.assertEqual(result.returncode, 1)
+        self.assertNotIn("unexpected-contact", result.stdout)
+        result = self.run_shell(
+            "ssh() { return 27; }\n"
+            + definition
+            + "\nuploadKey --file key.pub --host example@example.invalid\n"
+        )
+        self.assertEqual(result.returncode, 27)
+
+
 if __name__ == "__main__":
     unittest.main()

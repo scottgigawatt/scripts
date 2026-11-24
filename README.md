@@ -36,6 +36,8 @@ For example, this command inspects one MP4 file without changing it. Replace `YO
 python3 python/movie-checking/check_av1_codec.py --file YOUR-MOVIE.mp4
 ```
 
+The command prints per-file findings and a `--- Summary ---` section when it finishes.
+
 The folder cleanup helpers operate relative to the current working directory. Run their preview from a disposable copy of the media directory, using the actual path to the helper. Review the printed changes before selecting `--run`.
 
 `createPlexPlaylist` requires privately supplied `PLEX_URL`, `PLEX_SECTION_ID`, and `PLEX_TOKEN`; playlist entries must already use server-side paths. The `ubundo` and `ubunput` functions use a private, space-separated `SSH_HOSTS` list with their `--all` option. Keep this environment configuration outside the repository.

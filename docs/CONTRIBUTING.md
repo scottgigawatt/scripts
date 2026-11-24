@@ -51,7 +51,7 @@ Never run a media, authentication, or webhook utility merely to verify formattin
 5. Write a concise commit message that describes the change; an opening emoji and a little humor are welcome.
 6. Open a pull request with a concrete explanation and validation evidence. Assign `scottgigawatt` and add relevant labels.
 
-Pinned GitHub Action commits and development tool versions change through reviewed dependency updates. Renovate manages those updates; do not add a competing updater for the same dependencies.
+Renovate batches tooling updates on the first day of each month before 8 a.m. Eastern and utility runtime updates on Mondays before 8 a.m. Eastern. Direct dependency versions stay pinned; major upgrades require dashboard approval, and security fixes can appear immediately. All merges remain subject to maintainer review. Do not add a competing updater for the same dependencies.
 
 Leave the pull request open for maintainer review. A green workflow confirms its reported checks, while merging and repository branch-protection settings remain maintainer decisions.
 

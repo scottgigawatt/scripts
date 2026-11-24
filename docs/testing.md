@@ -41,7 +41,7 @@ A parsed shell file can still fail because a command is missing, a filename has 
 
 The PR workflow runs repository checks on supported runner platforms. Passing it does not configure required status checks or code-owner review in GitHub; those require repository settings. Review the workflow output for the exact checks completed on the current PR commit.
 
-The developer-only Markdown tool currently inherits the upstream [braces denial-of-service advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm). As of October 4, 2026, the advisory lists no patched version; `npm audit` reports five high-severity findings along the same dependency chain. The repository retains the compatible, locked Markdown tool used by Privateerr and Plundarr, uses reviewed lint patterns, and bounds workflow runtime. This dependency is a validation tool and is not installed for the standalone utilities. Review and refresh the lock when an upstream fix becomes available; the current audit is not clean.
+As of November 23, 2026, `npm audit` reports four low-severity findings along the developer-only Markdown tool's dependency chain, all originating in the [KaTeX trust-restriction advisory](https://github.com/advisories/GHSA-238p-pmpm-9mq7). The installed math extension requires KaTeX 0.16.x, while the advisory's fix requires 0.18.2 or later. Keep the compatible dependency range until upstream supports the fixed release; do not force an incompatible override or downgrade the Markdown tool. The previous braces advisory was withdrawn, and the current lock includes the Markdown parser and TOML security fixes. These tools are not installed for standalone utility use. Workflow timeouts bound validation runtime; the current audit is not clean.
 
 ## Test behavior safely
 

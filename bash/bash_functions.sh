@@ -44,24 +44,42 @@ function mp3Splitter() {
 # Returns: The last command exit status.
 #
 function set_metadata() {
-    local show_name="$1"
-    local season="$2"
+    if [[ ${#} -ne 2 ]]; then
+        printf '%s\n' 'usage: set_metadata <show_name> <season>' >&2
+        return 1
+    fi
+
+    local show_name="$1" season="$2"
+    local file episode_number temporary output status
 
     for file in *.mp4; do
+        [[ -f "$file" ]] || continue
         if [[ $file =~ ([0-9]{2})\ .mp4 ]]; then
             episode_number=${BASH_REMATCH[1]}
-            set -x
-            ffmpeg -i "$file" -metadata artist="$show_name" -metadata Season="$season" -metadata episode="$episode_number" -c copy "new_$file"
-            set +x
-            mv "new_$file" "$file"
         elif [[ $file =~ [sS]([0-9]{2})[eE]([0-9]{2})(-[eE]([0-9]{2}))? ]]; then
             episode_number=${BASH_REMATCH[2]}
-            set -x
-            ffmpeg -i "$file" -metadata artist="$show_name" -metadata Season="$season" -metadata episode="$episode_number" -c copy "new_$file"
-            set +x
-            mv "new_$file" "$file"
         else
-            echo "Error: $file does not match the expected format."
+            printf 'Error: %s does not match the expected format.\n' "$file" >&2
+            continue
+        fi
+
+        # Isolate output so a failed conversion cannot replace an existing file.
+        temporary=$(mktemp -d './.set-metadata.XXXXXXXX') || return "$?"
+        output="$temporary/output.mp4"
+        if ffmpeg -i "./$file" -metadata artist="$show_name" -metadata Season="$season" -metadata episode="$episode_number" -c copy "$output"; then
+            if mv "$output" "./$file"; then
+                rmdir "$temporary" || return "$?"
+            else
+                status=$?
+                rm -f "$output"
+                rmdir "$temporary"
+                return "$status"
+            fi
+        else
+            status=$?
+            rm -f "$output"
+            rmdir "$temporary"
+            return "$status"
         fi
     done
 }
@@ -91,7 +109,6 @@ function setEpisode() {
             track_metadata=(-metadata "track=$(eval "${meta_current_track}")/$(eval "${meta_total_tracks}")")
         fi
 
-        set -x
         ffmpeg -i "${i}" -i "${album_art}" \
             "${chapter_inputs[@]}" \
             -map 0:0 -map 1:0 \
@@ -102,9 +119,8 @@ function setEpisode() {
             -metadata title="$(eval "${meta_title}")" \
             "${track_metadata[@]}" \
             "${ffmpeg_args[@]}" \
-            "${convert_dir}/${i%.*}.${target_ext}"
-        AtomicParsley "${convert_dir}/${i%.*}.${target_ext}" --artwork REMOVE_ALL --artwork "${album_art}" --overWrite
-        set +x
+            "${convert_dir}/${i%.*}.${target_ext}" || return "$?"
+        AtomicParsley "${convert_dir}/${i%.*}.${target_ext}" --artwork REMOVE_ALL --artwork "${album_art}" --overWrite || return "$?"
     done
 }
 
@@ -231,7 +247,6 @@ function all2mp4() {
         echo "No subtitle tracks found in the video file."
     fi
 
-    set -x
     ffmpeg -i "${video_file}" \
         -c:v copy \
         -c:a "${audio_codec_global}" \
@@ -245,7 +260,6 @@ function all2mp4() {
         -metadata:s:t:0 title="Text Track" \
         -metadata:s:t:0 language=eng \
         "${video_file%.*}.processed.mp4" -y
-    set +x
 }
 
 #
@@ -294,7 +308,7 @@ function all2mp4_batch() {
             # Convert video files to MP4 in the season folder
             for video_file in "${season_folder}"/*; do
                 if [[ -f "${video_file}" ]]; then
-                    all2mp4 "$video_file"
+                    all2mp4 "$video_file" || return "$?"
 
                     # Trash original files if in-place requested
                     if [[ ${trash_originals} == "true" ]]; then
@@ -308,7 +322,7 @@ function all2mp4_batch() {
                         mkv_base_file="$(basename "$video_file")"
                         local trash_filename
                         trash_filename="$(printf "${HOME}/.Trash/%s-s%02de%02d-%s" "$tv_show_name" "$season_number" "$episode_number" "$mkv_base_file")"
-                        mv -v "$video_file" "$trash_filename"
+                        mv -v "$video_file" "$trash_filename" || return "$?"
                     fi
                 fi
             done
@@ -380,7 +394,6 @@ function processTvEpisodes() {
             local processed_episode_file="$season_folder"/processed_"$episode_base_file"
 
             # Set metadata using AtomicParsley
-            set -x
             AtomicParsley "$episode_file" \
                 --title "Episode $episode_number" \
                 --stick "TV Show" \
@@ -391,15 +404,14 @@ function processTvEpisodes() {
                 --TVEpisodeNum "$episode_number" \
                 --TVSeasonNum "$season_number" \
                 --track "$episode_number" \
-                --output "$processed_episode_file"
-            set +x
+                --output "$processed_episode_file" || return "$?"
 
             # Trash original files if in-place requested
             if [[ ${trash_originals} == "true" ]]; then
                 local trash_filename
                 trash_filename="$(printf "${HOME}/.Trash/processTvEpisodes_%s-s%02de%02d-%s" "$tv_show_name" "$season_number" "$episode_number" "$episode_base_file")"
-                mv -v "$episode_file" "$trash_filename"
-                mv -v "$processed_episode_file" "$episode_file"
+                mv -v "$episode_file" "$trash_filename" || return "$?"
+                mv -v "$processed_episode_file" "$episode_file" || return "$?"
             fi
         done
     done
@@ -416,7 +428,6 @@ function processTvEpisodes() {
 # Returns: The last command exit status.
 #
 function renameTvEpisodes() {
-    set -x
     # Ensure mp4info is installed (brew install mp4v2)
     command -v mp4info > /dev/null 2>&1 || {
         echo >&2 "I require mp4info but it's not installed.  Aborting."
@@ -462,7 +473,6 @@ function renameTvEpisodes() {
 
         # Iterate over episode files
         for episode_file in "$season_folder"/*.mp4; do
-            set -x
             # Use mp4info to extract episode number and title
             local episode_base_file
             episode_base_file="$(basename "$episode_file")"
@@ -481,15 +491,14 @@ function renameTvEpisodes() {
             new_filename=$(printf "%s %s.mp4" "$episode_number" "${file_suffix}")
 
             # Set the TVEpisode metadata field and rename the episode file
-            AtomicParsley "$episode_file" --TVEpisode "$episode_title" --output "$season_folder/$new_filename"
+            AtomicParsley "$episode_file" --TVEpisode "$episode_title" --output "$season_folder/$new_filename" || return "$?"
 
             # Trash original files if in-place requested
             if [[ ${trash_originals} == "true" ]]; then
                 local trash_filename
                 trash_filename="$(printf "${HOME}/.Trash/renameTvEpisodes_%s-s%02de%02d-%s" "$tv_show_name" "$season_number" "$episode_number" "$episode_base_file")"
-                mv -v "$episode_file" "$trash_filename"
+                mv -v "$episode_file" "$trash_filename" || return "$?"
             fi
-            set +x
         done
     done
 
@@ -997,21 +1006,30 @@ function splitMp4() {
     ffmpeg -i "${mp4_file}" -t "${split_time}" -c copy "${file1}" -ss "${split_time}" -c copy "${file2}"
 }
 
-join_mp4_files() {
-    local input1="$1"
-    local input2="$2"
-    local output="$3"
+#
+# join_mp4_files: Re-encode and combine two MP4 inputs through isolated intermediate files.
+#
+# Parameters: $1 - First input video.
+#             $2 - Second input video.
+#             $3 - Output video path.
+#
+# Returns: The failed conversion status, or 0 after a successful join.
+#
+function join_mp4_files() (
+    if [[ ${#} -ne 3 ]]; then
+        printf '%s\n' 'usage: join_mp4_files <first_input> <second_input> <output>' >&2
+        return 1
+    fi
 
-    # Re-encode inputs to ensure compatibility
-    ffmpeg -i "$input1" -c:v libx264 -c:a aac -strict experimental -f mpegts intermediate1.ts
-    ffmpeg -i "$input2" -c:v libx264 -c:a aac -strict experimental -f mpegts intermediate2.ts
+    local input1="$1" input2="$2" output="$3" temporary
+    temporary=$(mktemp -d './.join-mp4.XXXXXXXX') || return "$?"
+    # Only remove intermediates created by this invocation, including on failure.
+    trap 'rm -f "$temporary/first.ts" "$temporary/second.ts"; rmdir "$temporary"' EXIT
 
-    # Concatenate intermediate .ts files into the final output
-    ffmpeg -i "concat:intermediate1.ts|intermediate2.ts" -c copy -bsf:a aac_adtstoasc "$output"
-
-    # Clean up intermediate files
-    rm intermediate1.ts intermediate2.ts
-}
+    ffmpeg -i "$input1" -c:v libx264 -c:a aac -strict experimental -f mpegts "$temporary/first.ts" || return "$?"
+    ffmpeg -i "$input2" -c:v libx264 -c:a aac -strict experimental -f mpegts "$temporary/second.ts" || return "$?"
+    ffmpeg -i "concat:$temporary/first.ts|$temporary/second.ts" -c copy -bsf:a aac_adtstoasc "$output"
+)
 
 #
 # wmv2mp4:    Uses ffmpeg to convert an WMV to an MP4 file.
@@ -1539,78 +1557,55 @@ function printUploadKeyHelp() {
 # Returns: The last command exit status.
 #
 function uploadKey() {
-    # Ensure arguments were passed
-    if [[ ${#} -eq 0 ]]; then
-        printUploadKeyHelp
-        return 1
-    fi
+    local key_file="" remote_host="" remote_port="" key
+    local -a ssh_options=()
 
-    # Loop through the arguments
     while [[ ${#} -gt 0 ]]; do
+        if [[ ${#} -lt 2 || -z ${2} ]]; then
+            printUploadKeyHelp
+            return 1
+        fi
         case ${1} in
-            -f | --file)
-                shift
-                KEY_FILE=${1}
-                ;;
-            -h | --host)
-                shift
-                REMOTE_HOST=${1}
-                ;;
-            -p | --port)
-                shift
-                REMOTE_PORT=${1}
-                ;;
+            -f | --file) key_file=${2} ;;
+            -h | --host) remote_host=${2} ;;
+            -p | --port) remote_port=${2} ;;
             *)
                 printUploadKeyHelp
                 return 1
                 ;;
         esac
-        shift
+        shift 2
     done
 
-    # Ensure key(s) file is set
-    if [[ -n ${KEY_FILE// /} ]]; then
-        # Ensure key(s) file exists
-        if [[ ! -f ${KEY_FILE} ]]; then
-            echo "${FUNCNAME[0]}: error: private key(s) not found at '${KEY_FILE}'" >&2
-            return 1
-        fi
-
-        # Set absolute path of key(s) file
-        KEY_FILE=$(resolvePath "${KEY_FILE}")
-    fi
-
-    # Ensure remote host is set
-    if [[ -z ${REMOTE_HOST// /} ]]; then
-        echo "${FUNCNAME[0]}: error: remote host not provided for key upload" >&2
+    if [[ -z "$key_file" || ! -f "$key_file" || -z "$remote_host" ]]; then
+        printf '%s\n' 'error: provide an existing public key file and remote host' >&2
         return 1
     fi
 
-    # Check if remote port is set and is an integer
-    if [[ -n ${REMOTE_PORT// /} ]]; then
-        if [[ ! ${REMOTE_PORT} =~ ^[0-9]+$ ]]; then
-            echo "${FUNCNAME[0]}: error: '${REMOTE_PORT}' is not a valid port" >&2
+    if [[ -n "$remote_port" ]]; then
+        if [[ ! "$remote_port" =~ ^[0-9]+$ ]]; then
+            printf '%s\n' 'error: the SSH port must be an integer' >&2
             return 1
         fi
-
-        REMOTE_HOST="${REMOTE_HOST} -p ${REMOTE_PORT}"
+        ssh_options=(-p "$remote_port")
     fi
 
-    # Ensure ~/.ssh and authorized_keys exists on remote host
-    ssh -q "${REMOTE_HOST}" "umask 0077; mkdir -p ~/.ssh && [[ -f ~/.ssh/authorized_keys ]] || touch ~/.ssh/authorized_keys"
+    ssh -q "${ssh_options[@]}" -- "$remote_host" \
+        'umask 077; mkdir -p "$HOME/.ssh" && touch "$HOME/.ssh/authorized_keys"' || return "$?"
 
-    # Read in keys from file
-    while read -r KEY; do
-        K_TAG=$(echo "${KEY}" | cut -f3 -d" ")
-        K_HST=$(echo "${REMOTE_HOST}" | cut -f1 -d" ")
-        MSG_EXISTS="Key '${K_TAG}' exists for '${K_HST}', skipping"
-        MSG_ADDED="Key '${K_TAG}' uploaded for '${K_HST}'"
-        R_TST="grep -q '${KEY}' ~/.ssh/authorized_keys && echo \"${MSG_EXISTS}\""
-        R_CMD="umask 0077; echo '${KEY}' >> ~/.ssh/authorized_keys && echo \"${MSG_ADDED}\""
-
-        # Add key to authorized_keys if it is not already there
-        ssh -n "${REMOTE_HOST}" "(${R_TST}) || (${R_CMD})"
-    done < "${KEY_FILE}"
+    while IFS= read -r key || [[ -n "$key" ]]; do
+        [[ -n "$key" ]] || continue
+        # Send key text as data; comments must never become remote shell commands.
+        printf '%s\n' "$key" | ssh "${ssh_options[@]}" -- "$remote_host" '
+            IFS= read -r key || exit 1
+            if grep -Fqx -- "$key" "$HOME/.ssh/authorized_keys"; then
+                printf "%s\n" "Key already exists, skipping"
+            else
+                umask 077
+                printf "%s\n" "$key" >> "$HOME/.ssh/authorized_keys"
+            fi
+        ' || return "$?"
+    done < "$key_file"
 }
 
 #
@@ -1883,7 +1878,7 @@ function printCallingFunctionName() {
 # Parameters: $1 - The source folder for the synchronization.
 #             $2 - The destination folder for the synchronization.
 #
-# Returns: Status 1 on invalid input or cancellation; otherwise the final status message status.
+# Returns: Status 1 on invalid input or cancellation; otherwise the sync command status.
 #
 function folderSync() {
     local func_name src dest opts msg warning ans
@@ -1943,7 +1938,9 @@ function folderSync() {
             if sudo rsync "${opts[@]}" "${src}" "${dest}"; then
                 colorEcho "$(figlet -c -f'script' Sync complete.)" 132
             else
+                local status=$?
                 colorEcho "$(figlet -c -f'block' error)" 131
+                return "$status"
             fi
             ;;
         *)
